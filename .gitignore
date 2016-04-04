@@ -1,5 +1,6 @@
 build/
 build/*
+Kernel/
 kernel
 floppyA
 floppy.img
