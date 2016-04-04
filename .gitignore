@@ -1,0 +1,8 @@
+build/
+build/*
+kernel
+floppyA
+floppy.img
+c.img
+*.*~
+*~
