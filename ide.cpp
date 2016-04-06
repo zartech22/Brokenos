@@ -132,7 +132,44 @@ void IdeDrive::displayPartitions()
 		char *data = read(p.s_lba + 2, 2);
 
 		const char* isExt2 = (Ext2FS::isExt2FS(data)) ? "Ext2 Part" : "Unk Part";
-		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, Bootable : %s", i + 1, p.s_lba, size, isExt2, (p.bootable == 0x80) ? "True" : "False");
+		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
+
+		if(strcmp(isExt2, "Ext2 Part") == 0)
+		{
+			Ext2FS fs(p, *this);
+			struct file * f = fs.getDirEntries(fs.getRoot());
+			struct file *tmp = f;
+
+			bool cont = true;
+
+			while(cont)
+			{
+				if(tmp)
+				{
+					if(fs.isDirectory(tmp))
+						Screen().printDebug("Dir %s", tmp->name);
+					else
+						Screen().printDebug("File %s", tmp->name);
+
+					if(strcmp(tmp->name, "taMere.txt") == 0)
+					{
+						Screen().print("Data TaMere : ");
+						struct file *file = fs.getFile(tmp->name);
+						char *c = fs.readFile(file->inode);
+
+						for(int i = 0; i < file->inode->size; ++i, ++c)
+							Screen().print("%c", *c);
+
+						Screen().print("\n");
+					}
+
+					if(tmp->next == f || !tmp->next)
+						cont = false;
+					else
+						tmp = tmp->next;
+				}
+			}
+		}
 
 		kfree(data);
 	}

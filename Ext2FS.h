@@ -37,6 +37,7 @@
 #define	EXT2_X_O		0x0001
 
 #define	EXT2_MAGIC_NUMBER	0xEF53
+#define	EXT2_INUM_ROOT		2
 
 struct ext2_super_block
 {
@@ -137,14 +138,42 @@ struct directory_entry
 	char	name;
 } __attribute__((packed));
 
+struct file
+{
+	u32					inum;
+	char*				name;
+	struct ext2_inode*	inode;
+	char*				mmap;
+	bool				isOpen;
+	struct file*		parent;
+	struct file*		leaf;
+	struct file*		next;
+	struct file*		prev;
+};
+
+struct open_file
+{
+	struct file*		file;
+	u32					ptr;
+	struct open_file*	next;
+};
+
 
 class Ext2FS
 {
     public:
         Ext2FS(struct Partition, IdeDrive&);
 
-        //char* readFile(char *filename);
+        char* readFile(char *filename);
         char* readFile(struct ext2_inode*);
+
+        struct ext2_inode* readInode(int num);
+
+        struct file* getFile(char *name);
+        bool isDirectory(struct file*);
+        struct file* getDirEntries(struct file*);
+
+        struct file* getRoot() const { return _rootFile; }
 
         static bool isExt2FS(char *data);
 
@@ -158,9 +187,15 @@ class Ext2FS
 		struct ext2_super_block _sb;
 		struct ext2_group_desc *_groups;
 
+		struct file *_rootFile;
+
 		void readSuperBlock();
 		void readGroupBlock();
-		struct ext2_inode* readInode(int num);
+
+		void initRoot();
+
+		struct file* isCachedLeaf(struct file*, char*);
+
 };
 
 #endif // EXT2FS_H

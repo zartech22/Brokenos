@@ -5,6 +5,7 @@
 void* memcpy(char *, const char *, unsigned int);
 void* memset(char*, int, unsigned int);
 int strlen(const char*);
+int strcmp(const char*, const char*);
 void itoa(char*, unsigned long int, int);
 
 #ifdef __cplusplus
