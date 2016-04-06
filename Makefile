@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-m32 -std=c++11 -fno-stack-protector -c -fno-exceptions -ffreestanding
+CFLAGS=-m32 -std=c++11 -fno-stack-protector -c -fno-exceptions -ffreestanding -fno-rtti
 ASM=nasm
 AFLAGS=-f elf -o
 LDFLAGS=-m elf_i386 -Ttext 100000 --entry=_start

@@ -136,9 +136,9 @@ void IdeDrive::displayPartitions()
 
 		if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
-			Ext2FS fs(p, *this);
-			struct file * f = fs.getDirEntries(fs.getRoot());
-			struct file *tmp = f;
+            FileSystem *fs = new Ext2FS(p, *this);
+            struct file * f = fs->getDirEntries(fs->getRoot());
+            struct file *tmp = f;
 
 			bool cont = true;
 
@@ -146,18 +146,20 @@ void IdeDrive::displayPartitions()
 			{
 				if(tmp)
 				{
-					if(fs.isDirectory(tmp))
+                    if(fs->isDirectory(tmp))
 						Screen().printDebug("Dir %s", tmp->name);
 					else
 						Screen().printDebug("File %s", tmp->name);
 
+
 					if(strcmp(tmp->name, "taMere.txt") == 0)
 					{
 						Screen().print("Data TaMere : ");
-						struct file *file = fs.getFile(tmp->name);
-						char *c = fs.readFile(file->inode);
+                        struct file *file = fs->getFile(tmp->name);
+                        struct filePrivateData *data = (filePrivateData*)file->privateData;
+                        char *c = fs->readFile(data->inode);
 
-						for(int i = 0; i < file->inode->size; ++i, ++c)
+                        for(int i = 0; i < data->inode->size; ++i, ++c)
 							Screen().print("%c", *c);
 
 						Screen().print("\n");

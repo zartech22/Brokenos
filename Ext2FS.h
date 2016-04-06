@@ -3,6 +3,7 @@
 
 #include "ide.h"
 #include "types.h"
+#include "FileSystem.h"
 
 /* ERROR TYPES */
 #define	EXT2_ERRORS_CONTINUE	1
@@ -130,71 +131,60 @@ struct ext2_inode
 
 struct directory_entry
 {
-	u32		inode;
-	u16		record_entry;
-	u8		name_len;
-	u8		file_type;
+    u32		inode;
+    u16		record_entry;
+    u8		name_len;
+    u8		file_type;
 
-	char	name;
+    char	name;
 } __attribute__((packed));
 
-struct file
+struct filePrivateData
 {
 	u32					inum;
-	char*				name;
 	struct ext2_inode*	inode;
-	char*				mmap;
-	bool				isOpen;
-	struct file*		parent;
-	struct file*		leaf;
-	struct file*		next;
-	struct file*		prev;
 };
 
 struct open_file
 {
-	struct file*		file;
+    struct file*		file;
 	u32					ptr;
 	struct open_file*	next;
 };
 
 
-class Ext2FS
+class Ext2FS : public FileSystem
 {
     public:
-        Ext2FS(struct Partition, IdeDrive&);
+        Ext2FS(struct Partition&, IdeDrive&);
 
-        char* readFile(char *filename);
+        virtual char* readFile(const char *path) override;
         char* readFile(struct ext2_inode*);
+        virtual struct file* getFile(const char *name) override;
 
         struct ext2_inode* readInode(int num);
 
-        struct file* getFile(char *name);
-        bool isDirectory(struct file*);
-        struct file* getDirEntries(struct file*);
+        virtual bool isDirectory(const char *path) override {}
+        virtual bool isDirectory(struct file *f) override;
 
-        struct file* getRoot() const { return _rootFile; }
+        virtual struct file* getDirEntries(struct file*) override;
+        virtual struct file* getDirEntries(const char *path) override {}
 
         static bool isExt2FS(char *data);
 
     private:
-		struct Partition _part;
-		IdeDrive &_drive;
-
 		u32 _blockSize;
 		u16	_groupNumber;
 
-		struct ext2_super_block _sb;
+        struct ext2_super_block *_sb;
 		struct ext2_group_desc *_groups;
-
-		struct file *_rootFile;
 
 		void readSuperBlock();
 		void readGroupBlock();
 
-		void initRoot();
+        virtual void initFsRoot() override;
 
-		struct file* isCachedLeaf(struct file*, char*);
+        struct file* isCachedLeaf(struct file*, char*);
 
 };
 

@@ -1,3 +1,6 @@
+#ifndef _KMALLOC_
+#define _KMALLOC_
+
 #include <stddef.h>
 
 #include "types.h"
@@ -21,4 +24,6 @@ void* kmalloc(unsigned long);
 void kfree(const void*);
 #ifdef __cplusplus
 }
+#endif
+
 #endif
