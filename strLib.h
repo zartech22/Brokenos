@@ -71,6 +71,4 @@ private :
 	void move_cursor(u8, u8);
 };
 
-void strcpy(char*, const char*);
-
 #endif

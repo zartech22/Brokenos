@@ -4,6 +4,7 @@
 #include "strLib.h"
 #include "kmalloc.h"
 #include "lib.h"
+#include "String.h"
 
 #include "Ext2FS.h"
 
@@ -136,8 +137,8 @@ void IdeDrive::displayPartitions()
 
 		if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
-            FileSystem *fs = new Ext2FS(p, *this);
-            struct file * f = fs->getDirEntries(fs->getRoot());
+            Ext2FS fs(p, *this);
+            struct file * f = fs.getDirEntries(fs.getRoot());
             struct file *tmp = f;
 
 			bool cont = true;
@@ -146,18 +147,22 @@ void IdeDrive::displayPartitions()
 			{
 				if(tmp)
 				{
-                    if(fs->isDirectory(tmp))
+                    if(fs.isDirectory(tmp))
 						Screen().printDebug("Dir %s", tmp->name);
 					else
 						Screen().printDebug("File %s", tmp->name);
+                    String str(tmp->name);
+                    String st("taMere.txt");
 
+                    Screen().printError("Str : %s %s", str.c_str(), st.c_str());
 
-					if(strcmp(tmp->name, "taMere.txt") == 0)
+                    //if(strcmp(tmp->name, "taMere.txt") == 0)
+                    if(String(tmp->name) == String("taMere.txt"))
 					{
 						Screen().print("Data TaMere : ");
-                        struct file *file = fs->getFile(tmp->name);
+                        struct file *file = fs.getFile(tmp->name);
                         struct filePrivateData *data = (filePrivateData*)file->privateData;
-                        char *c = fs->readFile(data->inode);
+                        char *c = fs.readFile(data->inode);
 
                         for(int i = 0; i < data->inode->size; ++i, ++c)
 							Screen().print("%c", *c);

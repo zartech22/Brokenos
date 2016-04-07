@@ -404,14 +404,3 @@ void Screen::move_cursor(u8 x, u8 y)
 	outb(0x3d4, 0x0e);
 	outb(0x3d5, (u8)(c_pos >> 8));
 }
-
-void strcpy(char* dest, const char* src)
-{
-	int i = 0;
-	
-	while(src[i] != 0)
-	{
-		dest[i] = src[i];
-		i++;
-	}
-}

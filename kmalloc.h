@@ -14,7 +14,10 @@ struct kmalloc_header
 } __attribute__ ((packed));
 
 void* operator new(size_t size);
+void* operator new[](size_t size);
+
 void operator delete(void *mem);
+void operator delete[](void *meme);
 
 #ifdef __cplusplus
 	extern "C" {

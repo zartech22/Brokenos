@@ -1,4 +1,5 @@
 #include "lib.h"
+#include "String.h"
 
 void* memcpy(char *dst, const char *src, unsigned int n)
 {
@@ -60,3 +61,15 @@ void itoa(char *buf, unsigned long int n, int base)
 		buf[i] = tmp;
 	}
 }
+
+void strcpy(char* dest, const char* src)
+{
+    int i = 0;
+    while((dest[i] = src[i++]));
+}
+
+bool operator ==(const String &str1, const String &str2)
+{
+    return (strcmp(str1.c_str(), str2.c_str()) == 0);
+}
+
