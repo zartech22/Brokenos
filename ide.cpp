@@ -84,8 +84,7 @@ void IdeCtrl::checkPorts()
 
 /***********************************************************************
  * IdeDrive
- * *********************************************************************
-*/
+ * *********************************************************************/
 
 
 IdeDrive::IdeDrive(u16 regPorts, u16 controlPort, enum DriveRole pos)
@@ -151,20 +150,14 @@ void IdeDrive::displayPartitions()
 						Screen().printDebug("Dir %s", tmp->name);
 					else
 						Screen().printDebug("File %s", tmp->name);
-                    String str(tmp->name);
-                    String st("taMere.txt");
 
-                    Screen().printError("Str : %s %s", str.c_str(), st.c_str());
-
-                    //if(strcmp(tmp->name, "taMere.txt") == 0)
                     if(String(tmp->name) == String("taMere.txt"))
 					{
-						Screen().print("Data TaMere : ");
+                        Screen().print("Data %s : ", tmp->name);
                         struct file *file = fs.getFile(tmp->name);
-                        struct filePrivateData *data = (filePrivateData*)file->privateData;
-                        char *c = fs.readFile(data->inode);
+                        char *c = fs.readFile(file);
 
-                        for(int i = 0; i < data->inode->size; ++i, ++c)
+                        for(int i = 0; i < file->size; ++i, ++c)
 							Screen().print("%c", *c);
 
 						Screen().print("\n");

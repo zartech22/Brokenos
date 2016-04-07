@@ -13,6 +13,7 @@
         char*				name;
         char*				content;
         bool				isOpen;
+        u32                 size;
         void*               privateData;
         struct file*		parent;
         struct file*		leaf;

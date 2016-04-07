@@ -159,7 +159,7 @@ class Ext2FS : public FileSystem
         Ext2FS(struct Partition&, IdeDrive&);
 
         virtual char* readFile(const char *path) override;
-        char* readFile(struct ext2_inode*);
+        char* readFile(struct file*);
         virtual struct file* getFile(const char *name) override;
 
         struct ext2_inode* readInode(int num);

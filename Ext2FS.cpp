@@ -99,18 +99,26 @@ char* Ext2FS::readFile(const char *path)
         struct filePrivateData *data = (struct filePrivateData*)f->privateData;
         if(!data->inode)
             readInode(data->inum);
-        return readFile(data->inode);
+        f->size = data->inode->size;
+        return readFile(f);
 	}
 	else
 		return 0;
 }
 
-char* Ext2FS::readFile(struct ext2_inode *inode)
+char* Ext2FS::readFile(struct file *file)
 {
 	char *mmap_base, *mmap_head, *buf;
 
 	int *p,*pp, *ppp;
 	int n, size;
+
+    struct filePrivateData *data = (struct filePrivateData*)file->privateData;
+
+    if(!data)
+        return 0;
+
+    struct ext2_inode *inode = data->inode;
 
 	buf = (char*)kmalloc(_blockSize);
 	p = (int*)kmalloc(_blockSize);
@@ -118,6 +126,7 @@ char* Ext2FS::readFile(struct ext2_inode *inode)
 	ppp = (int*)kmalloc(_blockSize);
 
 	size = inode->size; // Taille totale du fichier
+    file->size = inode->size;
 	mmap_head = mmap_base = (char*)kmalloc(size);
 
 	// Direct block number
@@ -256,7 +265,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 
     if(!dir->content)
 	{
-        dir->content = readFile(data->inode);
+        dir->content = readFile(dir);
 		fileToClose = true;
 	}
 	else
@@ -281,8 +290,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 
 				leaf = (struct file*)kmalloc(sizeof(struct file));
 				leaf->name = (char*)kmalloc(dentry->name_len + 1);
-                //strcpy(leaf->name, filename);
-                memcpy(leaf->name, filename, dentry->name_len + 1);
+                strcpy(leaf->name, filename);
 
                 privData->inum = dentry->inode;
                 privData->inode = 0;
@@ -291,6 +299,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 				leaf->parent = dir;
 				leaf->leaf = 0;
                 leaf->privateData = privData;
+                leaf->size = 0;
 
 				if(prevLeaf)
 				{
