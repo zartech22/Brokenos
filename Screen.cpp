@@ -1,61 +1,116 @@
 #include "types.h"
 #include "io.h"
 #include "lib.h"
+#include "font.h"
+#include "Screen.h"
+#include "kmalloc.h"
+#include "mm.h"
 
-#include "strLib.h"
+#include "GraphicDisplayMode.h"
+#include "TextDisplayMode.h"
 
 #define RAMSCREEN 0xB8000
 #define SIZESCREEN 0xFA0
 #define SCREENLIM 0xB8FA0
 
-Screen Screen::_inst = Screen();
-
-u8 Screen::_posX = 0;
-u8 Screen::_posY = 0;
-
-u8 Screen::_colors = 0x0E;
-
-bool Screen::_isLoading = false;
-bool Screen::_showCursor = false;
-
-u8 Screen::_ticNbr = 0;
+Screen* Screen::_inst = 0;
 
 Screen& Screen::getScreen()
 {	
-	return Screen::_inst;
+    return *Screen::_inst;
 }
 
-void Screen::putcar(uchar c)
-{	
-	if(c == 10) //saut de ligne (CR-NL)
-	{
-		_posX = 0;
-		_posY++;
-	}
-	else if(c == 9) //tab
-		_posX = _posX + 8 - (_posX % 8);
-	else if(c == 13) //CR
-		_posX = 0;
-	else
-	{
-		uchar *video = (uchar *) (RAMSCREEN + 2 * _posX + 160 * _posY);
-		*video = c;
-		*(video + 1) = _colors;
-		_posX++;
-		if(_posX > 79)
-		{
-			_posX = 0;
-			_posY++;
-		}
-	}
-	if(_posY > 24)
-		scrollup(_posY - 24);
-	
-	if(_showCursor)
-		show_cursor();
-	else
-		hide_cursor();
+void Screen::initScreen(VbeModeInfo *info)
+{
+    if(info->ModeAttributes & 0x10)
+    {
+        char *end = (char*)info->PhysBasePtr + info->YResolution * info->BytesPerScanLine;
+
+//        char* v_addr = (char*)info->PhysBasePtr;
+//        char* p_addr = (char*)info->PhysBasePtr;
+
+        for(char *v_addr = (char*)info->PhysBasePtr, *p_addr = v_addr; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
+        {
+            set_page_frame_used(PAGE(v_addr));
+
+            u32* pde = (u32*) (0xFFFFF000 | (((u32) v_addr & 0xFFC00000) >> 20));
+
+            if((*pde & PG_PRESENT) == 0)
+            {
+                Screen::getScreen().printError("pd0_add_page() : kernel page table not found for vaddr. STOP");
+            }
+
+            //Modification de l'entree dans la table de page
+            u32* pte = (u32*) (0xFFC00000 | (((u32) v_addr & 0xFFFFF000) >> 10));
+            *pte = ((u32) p_addr) | (PG_PRESENT | PG_WRITE | 0);
+
+            //if(get_p_addr(v_addr) == p_addr)
+              //  asm("hlt");
+
+            asm("invlpg %0"::"m"(v_addr));
+        }
+
+        Screen::_inst = new GraphicDisplayMode(info);
+    }
+    else
+        Screen::_inst = new TextDisplayMode(info);
 }
+
+//void Screen::putcar(uchar c)
+//{
+//	if(c == 10) //saut de ligne (CR-NL)
+//	{
+//        _frameBuffer -= _posX * _bitsPerPixel;
+//        _frameBuffer += _bytePerLine;
+//		_posX = 0;
+//		_posY++;
+//	}
+//	else if(c == 9) //tab
+//		_posX = _posX + 8 - (_posX % 8);
+//	else if(c == 13) //CR
+//		_posX = 0;
+//	else
+//	{
+//        u8 pixelWidth = _bitsPerPixel / 8;
+//        uchar *pixel = _frameBuffer + _posX * pixelWidth + _posY * _bytePerLine;
+//        uchar *letter = font8x8_basic[c];
+//        //FIXME: Gerer le saut a la ligne si on arrive fin de ligne
+
+//        for (int x = 0; x < 8; x++)
+//        {
+//            for (int y = 0; y < 8; y++)
+//            {
+//                if(letter[x] & 1 << y)
+//                    *pixel = Color::White;
+//                else
+//                    *pixel = _colors;
+//                pixel += pixelWidth;
+//            }
+//            *pixel = _colors;
+//            pixel += _bytePerLine - 8;
+//        }
+
+//        _frameBuffer += _bitsPerPixel;
+//        _posX++;
+
+//        /*uchar *video = (uchar *) (RAMSCREEN + 2 * _posX + 160 * _posY);
+//		*video = c;
+//		*(video + 1) = _colors;
+//		_posX++;
+//		if(_posX > 79)
+//		{
+//			_posX = 0;
+//			_posY++;
+//        }*/
+//	}
+//    if(_posY > _maxY)
+//        scrollup(_posY - _maxY);
+	
+//	if(_showCursor)
+//		show_cursor();
+//	else
+//		hide_cursor();
+//}
 
 void Screen::print(const char *string, ...)
 {
@@ -139,14 +194,14 @@ void Screen::setPos(u8 posX, u8 posY)
 void Screen::okMsg()
 {
 	_posY--;
-	printBlock("OK", 79 - strlen("OK"), Green);
+    printBlock("OK", 120 - 8 * strlen("OK"), Green);
 	_posY++;
 }
 
 void Screen::failMsg()
 {
-	_posY--;
-	printBlock("FAIL", 79 - strlen("FAIL"), Red);
+    _posY -= 8;
+    printBlock("FAIL", 120 - 8 * strlen("FAIL"), Red);
 	_posY++;
 }
 
@@ -367,15 +422,15 @@ void Screen::printk_core(const char *s, va_list ap)
 				uival = va_arg(ap, int);
 				putcar((uchar) uival);
 			}
-		} else
-			putcar(c);
+        } else
+            putcar(c);
 	}
 }
 
 void Screen::printBlock(const char *msg, u8 posX, u8 colors)
 {
 	if(posX != 0)
-		posX -= 2;
+        posX -=  2;
 	
 	u8 tmp = _posX;
 	u8 tmpc = _colors;
@@ -390,7 +445,7 @@ void Screen::printBlock(const char *msg, u8 posX, u8 colors)
 	_colors = tmpc;
 	
 	if(posX == 0)
-		_posX += strlen(msg) + 2;
+        _posX += strlen(msg) + 2;
 }
 
 void Screen::move_cursor(u8 x, u8 y)

@@ -21,11 +21,10 @@ class Screen
 public :
 	static Screen& getScreen();
 	
-	Screen() {}
-	
-	~Screen() {}
+    virtual ~Screen() {}
 
-	void putcar(uchar);
+    virtual void putcar(uchar) = 0;
+
 	void print(const char*, ...);
 	void println(const char*, ...);
 	void printInfo(const char*, ...);
@@ -36,6 +35,8 @@ public :
 	
 	void setColor(enum Color fgColor, enum Color bgColor);
 	void setPos(u8 posX, u8 posY);
+
+    const u8& getColor() const { return _colors; }
 	
 	bool isLoading() const { return _isLoading; }
 	
@@ -51,23 +52,32 @@ public :
 	void showLoadScreen();
 	void showTic();
 	
-private :				
-	static Screen _inst;
+private :
+    friend int main(struct mb_partial_info *);
+
+    Screen(VbeModeInfo *info) : _posX(0), _posY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
+
+    static void initScreen(VbeModeInfo*);
+
+    static Screen *_inst;
 				
-	static u8 _posX, _posY;
-	static u8 _colors;
+    u8 _colors;
+
 	
-	static bool _showCursor;
-	static bool _isLoading;
-	static u8 _ticNbr;
+    bool _showCursor;
+    bool _isLoading;
+    u8 _ticNbr;
+
+    void print_core(const char*, va_list);
+    void println_core(const char*, va_list);
+    void printk_core(const char *s, va_list ap);
+    void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
 	
+protected:
+    Screen() : _posX(0), _posY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
+
 	void scrollup(u8);
-	
-	void print_core(const char*, va_list);
-	void println_core(const char*, va_list);
-	void printk_core(const char *s, va_list ap);
-	void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
-	
+    u8 _posX, _posY;
 	void move_cursor(u8, u8);
 };
 
