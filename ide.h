@@ -2,7 +2,7 @@
 #define __IDE__
 
 #include "types.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "lib.h"
 
 enum DriveRole
@@ -134,7 +134,7 @@ public:
 	{ for(unsigned int i = 0; i < 4; ++i) fillPartition(i); }
 
 	struct Partition getPartition(unsigned int i)
-	{ Screen::getScreen().printDebug("Start LBA : %u, Size : %u", _partitions[i].s_lba, _partitions[i].size); return _partitions[i]; }
+    { return _partitions[i]; }
 
 private:
 	IdeDrive *_drive;

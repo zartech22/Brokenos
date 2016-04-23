@@ -2,7 +2,7 @@
 #include "lib.h"
 #include "io.h"
 #include "process.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "kmalloc.h"
 
 #define __MM__
@@ -64,7 +64,7 @@ struct page* get_page_from_heap()
 		free_vm->vm_start += PAGESIZE;
 	
 	//Maj de l'espace d'adressage noyau
-	pd0_add_page(v_addr, p_addr, 0);
+    pd0_add_page(v_addr, p_addr, 0);
 	
 	//Renvoie la page
 	pg = (struct page*) kmalloc(sizeof(struct page));

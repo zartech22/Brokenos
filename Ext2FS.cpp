@@ -1,17 +1,15 @@
 #include "Ext2FS.h"
 #include "lib.h"
 #include "kmalloc.h"
-#include "strLib.h"
+#include "Screen.h"
 
 bool Ext2FS::isExt2FS(char *data)
 {
 	struct ext2_super_block *sb = (struct ext2_super_block*)data;
 
-	Screen s;
-
 	if(!data)
 	{
-		s.printError("Data NULL !");
+        Screen::getScreen().printError("Data NULL !");
 		return false;
 	}
 
@@ -259,7 +257,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 
 	if(!isDirectory(dir))
 	{
-        Screen().printError("%s isn't a directory !", dir->name);
+        Screen::getScreen().printError("%s isn't a directory !", dir->name);
 		return 0;
 	}
 

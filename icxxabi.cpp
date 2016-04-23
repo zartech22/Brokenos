@@ -1,5 +1,5 @@
 #include "icxxabi.h"
-#include "strLib.h"
+#include "Screen.h"
  
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ void *__dso_handle = 0; //Attention! Optimally, you should remove the '= 0' part
 
 void __cxa_pure_virtual()
 {
-    Screen().printError("Error with pure virtual !");
+    Screen::getScreen().printError("Error with pure virtual !");
 }
 
 int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)

@@ -2,7 +2,7 @@
 #define STRING_H
 
 #include "types.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "kmalloc.h"
 #include "lib.h"
 

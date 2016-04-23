@@ -1,5 +1,5 @@
 #include "types.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "kbd.h"
 #include "io.h"
 #include "gdt.h"
@@ -120,8 +120,8 @@ void isr_kbd_int()
 		}
 	}
 	
-	if(kbdmap[i * 4] == 'l')
-		Screen::getScreen().showLoadScreen();
+    /*if(kbdmap[i * 4] == 'l')
+        Screen::getScreen().showLoadScreen();*/
 }
 
 void love()

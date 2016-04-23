@@ -1,7 +1,7 @@
 #include "ide.h"
 #include "pci.h"
 #include "io.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "kmalloc.h"
 #include "lib.h"
 #include "String.h"
@@ -130,11 +130,14 @@ void IdeDrive::displayPartitions()
 		size += p.size % 1024;
 
 		char *data = read(p.s_lba + 2, 2);
-
+		
+		if(!data)
+			return;
+			
 		const char* isExt2 = (Ext2FS::isExt2FS(data)) ? "Ext2 Part" : "Unk Part";
 		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
 
-		if(strcmp(isExt2, "Ext2 Part") == 0)
+        /*if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
             Ext2FS fs(p, *this);
             struct file * f = fs.getDirEntries(fs.getRoot());
@@ -169,7 +172,7 @@ void IdeDrive::displayPartitions()
 						tmp = tmp->next;
 				}
 			}
-		}
+        }*/
 
 		kfree(data);
 	}
@@ -351,6 +354,5 @@ void Partitions::fillPartition(unsigned int i)
 {
 	struct Partition &p = _partitions[i];
 
-	//Screen::getScreen().printError("Offset : %x", (0x01BE + (i * 0x10)));
 	_drive->read(0x01BE + (i * 0x10), (char*)(&p), sizeof(struct Partition));
 }

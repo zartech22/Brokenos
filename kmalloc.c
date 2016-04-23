@@ -2,7 +2,7 @@
 #include "lib.h"
 #include "mm.h"
 #include "kmalloc.h"
-#include "strLib.h"
+#include "Screen.h"
 
 void* operator new(size_t size)
 {

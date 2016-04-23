@@ -1,6 +1,6 @@
 #include "types.h"
 #include "gdt.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "io.h"
 #include "idt.h"
 #include "mm.h"
@@ -11,7 +11,8 @@
 #include "ide.h"
 
 void init_pic();
-int main(u32 high_mem);
+int main(mb_partial_info *multiboot_info);
+//void displayTest(VbeModeInfo *info, char car);
 
 void get_cpu_vendor(u32 str[3])
 {
@@ -63,39 +64,8 @@ extern "C" {
 void kmain(struct mb_partial_info *memInfo)
 {
 	cli;
-	Screen s;
 
-	s.printInfo("Kernel charge en memoire !");
-	s.okMsg();
-
-	s.printDebug("Info memoire : %uk (lower) %uk (upper)", memInfo->low_mem, memInfo->high_mem);
-
-	s.printInfo("kernel : chargement nouvelle gdt...");
-	init_gdt();
-	s.okMsg();
-
-	s.printInfo("\t->Reaffectation du registre SS et ESP...");
-
-	asm("movw $0x18, %%ax	\n \
-		 movw %%ax, %%ss		\n \
-		 movl %0, %%esp" :: "i"(KERN_STACK));
-	s.okMsg();
-
-	s.printInfo("kernel : chargement idt...");
-	init_idt();
-	s.okMsg();
-
-
-	s.printInfo("kernel : configuration du PIC...");
-	init_pic();
-	s.okMsg();
-
-	s.printInfo("kernel : init tss");
-	asm("	movw $0x38, %ax \n \
-			ltr %ax");
-	s.okMsg();
-
-	main(memInfo->high_mem);
+    main(memInfo);
 }
 
 void task1()
@@ -167,26 +137,67 @@ void task3()
 	}
 }
 
-int main(u32 high_mem)
+int main(struct mb_partial_info *mbinfo)
 {
-	Screen s;
-	s.printInfo("kernel : initialisation de la memoire...");
-	init_mm(high_mem);
-	s.println("kernel : paging actif !");
+    init_gdt();
+    // Update SS and ESP
+    asm("movw $0x18, %%ax	\n \
+         movw %%ax, %%ss		\n \
+         movl %0, %%esp" :: "i"(KERN_STACK));
 
-	s.printInfo("kernel : reactivation des interruptions...");
-	s.okMsg();
+    init_idt();
+    init_mm(mbinfo->high_mem);
 
-	s.printInfo("Initialisation de l'horloge...");
+    Screen::initScreen((struct VbeModeInfo*)mbinfo->vbe_mode_info);
+
+    Screen &s = Screen::getScreen();
+
+    s.printInfo("Kernel charge en memoire !");
+    //s.okMsg();
+    s.printInfo("kernel : chargement idt...");
+    //s.okMsg();
+    s.printInfo("kernel : initialisation de la memoire...");
+    s.println("kernel : paging actif !");
+
+    s.printDebug("Info memoire : %uk (lower) %uk (upper)", mbinfo->low_mem, mbinfo->high_mem);
+
+    s.printInfo("kernel : chargement nouvelle gdt...");
+//    s.okMsg();
+    s.printInfo("\t->Reaffectation du registre SS et ESP...");
+
+    struct VbeModeInfo *info = (struct VbeModeInfo*)mbinfo->vbe_mode_info;
+    s.printDebug("VBE BitsPerPixel %u, %u, %p", info->XResolution, info->YResolution, info->PhysBasePtr);
+
+    if(mbinfo->flags & 0x800)
+        s.printDebug("C'est good ! %s", mbinfo->boot_loader_name);
+    else
+        s.printDebug("La merde...");
+
+    //displayTest(info, 'a');
+
+
+    s.printInfo("kernel : configuration du PIC...");
+    init_pic();
+//    s.okMsg();
+
+    s.printInfo("kernel : init tss");
+    asm("	movw $0x38, %ax \n \
+            ltr %ax");
+//    s.okMsg();
+
+    s.printInfo("kernel : reactivation des interruptions...");
+//    s.okMsg();
+
+    s.printInfo("Initialisation de l'horloge...");
 	outb(0x43, 0x34);
 	outb(0x40, (0x1234DE / 50) & 0x00FF);
 	outb(0x40, (0x1234DE / 50) & 0xFF00);
-	s.okMsg();
+//    s.okMsg();
 
 
-	s.printInfo("Kernel pret a l'action !");
+    s.printInfo("Kernel pret a l'action !");
 
-	s.hide_cursor();
+    s.hide_cursor();
 
 	//Init kernel thread
 	current = &p_list[0];
@@ -194,8 +205,8 @@ int main(u32 high_mem)
 	current->state = 1;
 	current->regs.cr3 = (u32) pd0;
 
-	/*load_task((char*) &task1, 0x2000);
-	load_task((char*) &task2, 0x2000);*/
+    //load_task((char*) &task1, 0x2000);
+    /*load_task((char*) &task2, 0x2000);*/
 
 	/*** TEST DISK ***/
 
@@ -227,13 +238,13 @@ int main(u32 high_mem)
 	get_cpu_vendor((u32*) vendor);
 	get_cpu_brand((u32*) brand);
 
-	s.println("Vendor : %s", vendor);
+    s.println("Vendor : %s", vendor);
 	kfree(vendor);
 
-	s.println("Brand : %s", brand);
+    s.println("Brand : %s", brand);
 	kfree(brand);
 
-	s.printDebug("PCI list :");
+    s.printDebug("PCI list :");
 	pciGetVendors();
 
 	IdeDrive &d = ctrl.getDrive(PrimaryBus, Slave);
@@ -244,14 +255,36 @@ int main(u32 high_mem)
 
 	d.write(2, 1, buffer);*/
 
-	d.displayPartitions();
+    d.displayPartitions();
 
-	s.printInfo("kernel : tasks created");
+    s.printInfo("kernel : tasks created");
 
-	s.printInfo("kernel : scheduler enabled");
+    s.printInfo("kernel : scheduler enabled");
+
+    s.printError("Address : %p", info->PhysBasePtr);
 
 	sti;
 
 	for(;;)
 		asm("hlt");
 }
+
+/*void displayTest(struct VbeModeInfo *info, char car)
+{
+    char pixelWidth = info->BitsPerPixel / 8;
+
+    uchar *pixel = (uchar*)info->PhysBasePtr;
+    uchar *letter = font8x8_basic[car];
+
+
+    for (int x = 0; x < 8; x++)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            if(letter[x] & 1 << y)
+                *pixel = Color::White;
+            pixel += pixelWidth;
+        }
+        pixel += info->BytesPerScanLine - 8;
+    }
+}*/

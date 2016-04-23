@@ -3,7 +3,7 @@
 #include "pci.h"
 #include "io.h"
 #include "lib.h"
-#include "strLib.h"
+#include "Screen.h"
 #include "kmalloc.h"
 #include "pciIds.h"
 #include "ide.h"
@@ -219,7 +219,7 @@ void checkFunction(u8 bus, u8 device, u8 function)
 		checkBus(secBus);
 	}
 	
-	//displayDevice(vendor, classCode, subClass, devId);
+    displayDevice(vendor, classCode, subClass, devId);
 	
 	if(classCode == MassStorageCtrl && subClass == 0x01)
 	{
