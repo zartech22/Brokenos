@@ -16,6 +16,19 @@ enum Color
 	White		= 0x7
 };
 
+enum Color_32
+{
+    Black32		= 0x000000,
+    Blue32		= 0x0000FF,
+    Green32		= 0x00FF00,
+    SoftBlue32	= 0x0094FF,
+    Red32       = 0xFF0000,
+    Pink32		= 0xFF008E,
+    Yellow32    = 0xFDFF00,
+    White32		= 0xFFFFFF,
+    Orange32    = 0xFF9F00
+};
+
 class Screen
 {
 public :
@@ -74,10 +87,10 @@ private :
     void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
 	
 protected:
-    Screen() : _posX(0), _posY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
+    Screen() : _posX(0), _posY(0), _maxX(0), _maxY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
 
-	void scrollup(u8);
-    u8 _posX, _posY;
+    virtual void scrollup(u8);
+    u8 _posX, _posY, _maxX, _maxY;
 	void move_cursor(u8, u8);
 };
 

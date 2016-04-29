@@ -24,14 +24,14 @@ void Screen::initScreen(VbeModeInfo *info)
 {
     if(info->ModeAttributes & 0x10)
     {
-        char *end = (char*)info->PhysBasePtr + info->YResolution * info->BytesPerScanLine;
+        char *end = (char*)0x1100000 + info->YResolution * info->BytesPerScanLine;
 
 //        char* v_addr = (char*)info->PhysBasePtr;
 //        char* p_addr = (char*)info->PhysBasePtr;
 
-        for(char *v_addr = (char*)info->PhysBasePtr, *p_addr = v_addr; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
+        for(char *v_addr = (char*)0x1100000, *p_addr = (char*)info->PhysBasePtr; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
         {
-            set_page_frame_used(PAGE(v_addr));
+            set_page_frame_used(PAGE(p_addr));
 
             u32* pde = (u32*) (0xFFFFF000 | (((u32) v_addr & 0xFFC00000) >> 20));
 

@@ -24,7 +24,7 @@ public:
             *video = c;
             *(video + 1) = getColor();
             _posX++;
-            if(_posX > 79)
+            if(_posX > _maxX)
             {
                 _posX = 0;
                 _posY++;
@@ -43,10 +43,13 @@ private:
     friend class Screen;
     friend int main(struct mb_partial_info*);
 
-    TextDisplayMode(VbeModeInfo *info) : Screen(), _frameBuffer((uchar*)0xB8000), _maxX(info->XResolution), _maxY(info->YResolution) {}
+    TextDisplayMode(VbeModeInfo *info) : Screen(), _frameBuffer((uchar*)0xB8000)
+    {
+        _maxX = info->XResolution;
+        _maxY = info->YResolution;
+    }
 
     uchar * const _frameBuffer;
-    u8 _maxX, _maxY;
 };
 
 #endif // GRAPHICDISPLAYMODE_H
