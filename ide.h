@@ -70,7 +70,7 @@ public:
 		strcpy(_modelName, "Uninitialized IDE Device");
 	}
 
-	~IdeDrive() {}
+    ~IdeDrive() {}
 
 	IdeDrive(u16 regPorts, u16 controlPort, enum DriveRole pos);
 	bool isConnected() const { return _isConnected; }

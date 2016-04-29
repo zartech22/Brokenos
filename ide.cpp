@@ -315,7 +315,7 @@ void IdeDrive::read(int offset, char *buffer, int count)
 
 	blockNbr = blockEnd - blockBegin + 1;
 
-	char *data = read(blockBegin, blockNbr);
+    const char *data = read(blockBegin, blockNbr);
 
 	if(data)
 	{

@@ -12,7 +12,6 @@
 
 void init_pic();
 int main(mb_partial_info *multiboot_info);
-//void displayTest(VbeModeInfo *info, char car);
 
 void get_cpu_vendor(u32 str[3])
 {
@@ -80,11 +79,11 @@ void task1()
 	msg[5] = '\n';
 	msg[6] = 0;
 
-	while(1)
+    while(1)
 	{
 		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-		for(int i = 0; i < 1000000; i++);
-	}
+        for(int i = 0; i < 1000000; i++);
+    }
 
 	return;
 }
@@ -166,7 +165,9 @@ int main(struct mb_partial_info *mbinfo)
     s.printInfo("\t->Reaffectation du registre SS et ESP...");
 
     struct VbeModeInfo *info = (struct VbeModeInfo*)mbinfo->vbe_mode_info;
-    s.printDebug("VBE BitsPerPixel %u, %u, %p", info->XResolution, info->YResolution, info->PhysBasePtr);
+
+    s.printDebug("VBE BitsPerPixel %u, %u, %u,  %p", info->XResolution, info->YResolution, info->BitsPerPixel, info->PhysBasePtr);
+
 
     if(mbinfo->flags & 0x800)
         s.printDebug("C'est good ! %s", mbinfo->boot_loader_name);
@@ -235,6 +236,7 @@ int main(struct mb_partial_info *mbinfo)
 	char *brand = (char*) kmalloc(49);
 	memset(brand, 0, 49);
 
+
 	get_cpu_vendor((u32*) vendor);
 	get_cpu_brand((u32*) brand);
 
@@ -268,23 +270,3 @@ int main(struct mb_partial_info *mbinfo)
 	for(;;)
 		asm("hlt");
 }
-
-/*void displayTest(struct VbeModeInfo *info, char car)
-{
-    char pixelWidth = info->BitsPerPixel / 8;
-
-    uchar *pixel = (uchar*)info->PhysBasePtr;
-    uchar *letter = font8x8_basic[car];
-
-
-    for (int x = 0; x < 8; x++)
-    {
-        for (int y = 0; y < 8; y++)
-        {
-            if(letter[x] & 1 << y)
-                *pixel = Color::White;
-            pixel += pixelWidth;
-        }
-        pixel += info->BytesPerScanLine - 8;
-    }
-}*/
