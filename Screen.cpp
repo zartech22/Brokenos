@@ -9,9 +9,11 @@
 #include "GraphicDisplayMode.h"
 #include "TextDisplayMode.h"
 
-#define RAMSCREEN 0xB8000
-#define SIZESCREEN 0xFA0
-#define SCREENLIM 0xB8FA0
+#define RAMSCREEN           0xB8000
+#define SIZESCREEN          0xFA0
+#define SCREENLIM           0xB8FA0
+
+#define GRAPHIC_MODE_ATTR   0x10
 
 Screen* Screen::_inst = 0;
 
@@ -22,95 +24,17 @@ Screen& Screen::getScreen()
 
 void Screen::initScreen(VbeModeInfo *info)
 {
-    if(info->ModeAttributes & 0x10)
+    if(info->ModeAttributes & GRAPHIC_MODE_ATTR)
     {
-        char *end = (char*)0x1100000 + info->YResolution * info->BytesPerScanLine;
+        char *end = (char*)GRAPHIC_MODE_VIDEO + info->YResolution * info->BytesPerScanLine;
 
-//        char* v_addr = (char*)info->PhysBasePtr;
-//        char* p_addr = (char*)info->PhysBasePtr;
-
-        for(char *v_addr = (char*)0x1100000, *p_addr = (char*)info->PhysBasePtr; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
-        {
-            set_page_frame_used(PAGE(p_addr));
-
-            u32* pde = (u32*) (0xFFFFF000 | (((u32) v_addr & 0xFFC00000) >> 20));
-
-            if((*pde & PG_PRESENT) == 0)
-            {
-                Screen::getScreen().printError("pd0_add_page() : kernel page table not found for vaddr. STOP");
-            }
-
-            //Modification de l'entree dans la table de page
-            u32* pte = (u32*) (0xFFC00000 | (((u32) v_addr & 0xFFFFF000) >> 10));
-            *pte = ((u32) p_addr) | (PG_PRESENT | PG_WRITE | 0);
-
-            //if(get_p_addr(v_addr) == p_addr)
-              //  asm("hlt");
-
-            asm("invlpg %0"::"m"(v_addr));
-        }
+        init_graphicMode_video_memory((char*)info->PhysBasePtr, end);
 
         Screen::_inst = new GraphicDisplayMode(info);
     }
     else
         Screen::_inst = new TextDisplayMode(info);
 }
-
-//void Screen::putcar(uchar c)
-//{
-//	if(c == 10) //saut de ligne (CR-NL)
-//	{
-//        _frameBuffer -= _posX * _bitsPerPixel;
-//        _frameBuffer += _bytePerLine;
-//		_posX = 0;
-//		_posY++;
-//	}
-//	else if(c == 9) //tab
-//		_posX = _posX + 8 - (_posX % 8);
-//	else if(c == 13) //CR
-//		_posX = 0;
-//	else
-//	{
-//        u8 pixelWidth = _bitsPerPixel / 8;
-//        uchar *pixel = _frameBuffer + _posX * pixelWidth + _posY * _bytePerLine;
-//        uchar *letter = font8x8_basic[c];
-//        //FIXME: Gerer le saut a la ligne si on arrive fin de ligne
-
-//        for (int x = 0; x < 8; x++)
-//        {
-//            for (int y = 0; y < 8; y++)
-//            {
-//                if(letter[x] & 1 << y)
-//                    *pixel = Color::White;
-//                else
-//                    *pixel = _colors;
-//                pixel += pixelWidth;
-//            }
-//            *pixel = _colors;
-//            pixel += _bytePerLine - 8;
-//        }
-
-//        _frameBuffer += _bitsPerPixel;
-//        _posX++;
-
-//        /*uchar *video = (uchar *) (RAMSCREEN + 2 * _posX + 160 * _posY);
-//		*video = c;
-//		*(video + 1) = _colors;
-//		_posX++;
-//		if(_posX > 79)
-//		{
-//			_posX = 0;
-//			_posY++;
-//        }*/
-//	}
-//    if(_posY > _maxY)
-//        scrollup(_posY - _maxY);
-	
-//	if(_showCursor)
-//		show_cursor();
-//	else
-//		hide_cursor();
-//}
 
 void Screen::print(const char *string, ...)
 {

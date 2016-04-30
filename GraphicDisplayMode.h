@@ -5,6 +5,7 @@
 #include "types.h"
 #include "font.h"
 #include "lib.h"
+#include "mm.h"
 
 class GraphicDisplayMode : public Screen
 {
@@ -105,7 +106,7 @@ private:
     friend class Screen;
     friend int main(struct mb_partial_info*);
 
-    GraphicDisplayMode(VbeModeInfo *info) : Screen(), _frameBuffer((uchar*)0x1100000), _pixel(_frameBuffer), _bytePerLine(info->BytesPerScanLine),
+    GraphicDisplayMode(VbeModeInfo *info) : Screen(), _frameBuffer((uchar*)GRAPHIC_MODE_VIDEO), _pixel(_frameBuffer), _bytePerLine(info->BytesPerScanLine),
         _bitsPerPixel(info->BitsPerPixel), _pixelWidth(_bitsPerPixel / 8)
     {
         _maxX = info->XResolution / 8 - 1;

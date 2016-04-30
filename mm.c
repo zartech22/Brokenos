@@ -188,6 +188,16 @@ void init_mm(u32 high_mem)
 	return;
 }
 
+void init_graphicMode_video_memory(char *p_addr, char *end)
+{
+    for(char *v_addr = (char*)GRAPHIC_MODE_VIDEO; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
+    {
+        set_page_frame_used(PAGE(p_addr));
+
+        pd0_add_page(v_addr, p_addr, 0);
+    }
+}
+
 //creer un rep de page pour une tache
 struct page_directory* pd_create()
 {

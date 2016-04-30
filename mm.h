@@ -7,10 +7,14 @@
 #define IDTSIZE 0xFF //nb desc 
 #define GDTSIZE 0xFF //nb desc
 
-#define IDTBASE 0x00000000 // addr phys IDT
-#define GDTBASE 0x00000800 // addr phys GDT
+//#define IDTBASE 0x00000000 // addr phys IDT
+//#define GDTBASE 0x00000800 // addr phys GDT
 
-#define	KERN_PDIR		0x00001000
+#define IDTBASE 0x00001000 // addr phys IDT
+#define GDTBASE 0x00001800 // addr phys GDT
+
+//#define	KERN_PDIR		0x00001000
+#define	KERN_PDIR		0x00002000
 #define	KERN_STACK		0x0009FFF0
 #define	KERN_BASE		0x00100000
 #define KERN_PG_HEAP		0x00800000
@@ -25,6 +29,8 @@
 #define VADDR_PT_OFFSET(addr)	((addr) & 0x003FF000) >> 12
 #define VADDR_PG_OFFSET(addr)	(addr) & 0x00000FFF
 #define PAGE(addr)				(addr) >> 12
+
+#define GRAPHIC_MODE_VIDEO      0x1100000
 
 #define PAGING_FLAG	0x80000000
 #define PSE_FLAG	0x00000010
@@ -101,6 +107,9 @@ int release_page_from_heap(char*);
 
 //init les struct de donnees de gestion de la memoire
 void init_mm(u32);
+
+// Fait le mapping Virtual GraphicMode Video <-> Phys GraphicModeVideo
+void init_graphicMode_video_memory(char *p_addr, char *end);
 
 //creer un rep de page pour une tache
 struct page_directory* pd_create();
