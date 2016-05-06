@@ -5,7 +5,10 @@ enum VendorsId
 	NVidia	=	0x10DE,
 	Oracle	=	0x80EE,
 	AMD		=	0x1022,
-	APPLE	=	0x106B
+    APPLE	=	0x106B,
+    VmWare  =   0x15AD,
+    Ensoniq =   0x1274,
+    Mylex   =   0x104B
 };
 
 enum ClassCode

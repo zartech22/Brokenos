@@ -91,7 +91,16 @@ const char* pciGetVendorName(u16 vendor)
 			break;
 		case APPLE:
 			strcpy(name, "Apple");
-			break;
+            break;
+        case VmWare:
+            strcpy(name, "VmWare");
+            break;
+        case Ensoniq:
+            strcpy(name, "Ensoniq");
+            break;
+        case Mylex:
+            strcpy(name, "Mylex");
+            break;
 		default:
 			itoa(name, vendor, 16);
 			break;
