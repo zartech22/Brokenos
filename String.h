@@ -9,10 +9,10 @@
 class String
 {
 public:
-    String(const char *str) : _str(new char[strlen(str)]) { strcpy(_str, str); }
+    String(const char *str) : _str(new char[strlen(str) + 1]) { strcpy(_str, str); }
     String(const char c) : _str(new char[2]) { _str[0] = c; _str[1] = 0;  }
     String(const String &o) : String(o._str) {}
-    virtual ~String() { delete[] _str; }
+    virtual ~String() { delete _str; }
 
     size_t size() const { return strlen(_str); }
 
