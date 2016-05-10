@@ -164,11 +164,11 @@ class Ext2FS : public FileSystem
 
         struct ext2_inode* readInode(int num);
 
-        virtual bool isDirectory(const char *path) override {}
+        virtual bool isDirectory(const char *path) override { return isDirectory(getFile(path)); }
         virtual bool isDirectory(struct file *f) override;
 
         virtual struct file* getDirEntries(struct file*) override;
-        virtual struct file* getDirEntries(const char *path) override {}
+        virtual struct file* getDirEntries(const char *path) override { return getDirEntries(getFile(path)); }
 
         static bool isExt2FS(char *data);
 
