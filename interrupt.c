@@ -25,40 +25,90 @@ void isr_clock_int()
 	
 	tic++;
 	
-	if(tic % 2000 == 0)
+    if(tic % 50 == 0)
 	{
 		sec++;
 		tic = 0;
 		
 		if(Screen::getScreen().isLoading())
 			Screen::getScreen().showTic();
-		/*else
-			putcar('.');*/
+        else
+            Screen::getScreen().putcar('.');
 	}
 	
 	schedule();
 }
 
-void isr_GP_exc()
+void isr_GP_exc(u32 error)
 {
-	Screen::getScreen().print("GP Fault\n");
+    u32 fault_addr;
+    char *opcode = (char*)fault_addr;
+
+    //asm("movl 60(%%ebp), %%eax;"
+      //  "mov %%eax, %0;" : "=m"(fault_addr):);
+
+    Screen::getScreen().setPos(0, 0);
+    Screen::getScreen().clean();
+    Screen::getScreen().printError("#GP");
+    Screen::getScreen().printError("Faulting address : %p", fault_addr);
+
+    if(error != 0)
+    {
+        Screen::getScreen().printError("Error's origin : %s", (error & 0x1) ? "External" : "Internal");
+
+        switch ((error >> 1) & 0x3)
+        {
+        case 0x0:
+            Screen::getScreen().printError("GDT Selector");
+            break;
+        case 0x1:
+            Screen::getScreen().printError("IDT Selector");
+            break;
+        case 0x2:
+            Screen::getScreen().printError("LDT Selector");
+            break;
+        case 0x3:
+            Screen::getScreen().printError("IDT Selector");
+            break;
+        default:
+            break;
+        }
+
+        Screen::getScreen().printError("Selector : %x", (error >> 3) & 0x1FFF);
+    }
+    else
+        Screen::getScreen().printError("Unknown error");
 	
 	asm("hlt");
 }
 
-void isr_PF_exc()
+void isr_PF_exc(u32 error)
 {
 	u32 faulting_addr;
 	u32 eip;
+    char *addr = (char*)faulting_addr;
 	
 	asm("	movl 60(%%ebp), %%eax;	\
 			mov %%eax, %0;			\
 			mov %%cr2, %%eax;		\
 			mov %%eax, %1": "=m"(eip), "=m"(faulting_addr): );
-	Screen::getScreen().println("#PF");
-	Screen::getScreen().dump((uchar*) &faulting_addr, 4);
-	Screen::getScreen().println("");
-	Screen::getScreen().dump((uchar*) &eip, 4);
+
+    Screen::getScreen().setPos(0, 0);
+    Screen::getScreen().clean();
+    Screen::getScreen().printError("#PF");
+    Screen::getScreen().printError("Faulting addr %p, EIP %p", faulting_addr, eip);
+
+    Screen::getScreen().printError("Error desc :");
+
+    Screen::getScreen().printError("%s", (error & 0x1) ? "Protection violation" : "Non-present Page");
+    Screen::getScreen().printError("Caused by %s access", (error & 0x2) ? "write" : "read");
+    Screen::getScreen().printError("In %s mode", (error & 0x4) ? "user" : "root");
+
+    if(error & 0x8)
+        Screen::getScreen().printError("Page entry with reserved bit(s) set");
+    if(error & 0x10)
+        Screen::getScreen().printError("Fault caused by instruction fetch");
+
 	
 	asm("hlt");
 }
