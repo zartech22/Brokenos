@@ -15,41 +15,18 @@ int main(mb_partial_info *multiboot_info);
 
 void get_cpu_vendor(u32 str[3])
 {
-	asm volatile("push %%eax;"
-				"push %%ebx;"
-				"push %%edx;"
-				"push %%edx;"
-				"xor %%eax, %%eax;"
+    asm volatile("xor %%eax, %%eax;"
 				"cpuid;"
-				: "=b" (*str), "=c" (*(str + 2)), "=d" (*(str + 1)));
-	asm volatile("pop %%edx;"
-				"pop %%ecx;"
-				"pop %%ebx;"
-				"pop %%eax;" : :);
+                : "=b" (*str), "=c" (*(str + 2)), "=d" (*(str + 1)) :: "%eax");
 }
 
 void get_cpu_brand(u32 str[12])
 {
-	asm volatile("push %%eax;"
-				"push %%ebx;"
-				"push %%ecx;"
-				"push %%edx;"
-				"mov $0x80000002, %%eax;"
-				"cpuid;"
-				: "=a" (*str), "=b" (*(str + 1)), "=c" (*(str + 2)), "=d" (*(str + 3)));
+    asm volatile("cpuid;" : "=a" (*str), "=b" (*(str + 1)), "=c" (*(str + 2)), "=d" (*(str + 3)) : "a" (0x80000002));
 
-	asm volatile("mov $0x80000003, %%eax;"
-				"cpuid;"
-				: "=a" (*(str + 4)), "=b" (*(str + 5)), "=c" (*(str + 6)), "=d" (*(str + 7)));
+    asm volatile("cpuid;" : "=a" (*(str + 4)), "=b" (*(str + 5)), "=c" (*(str + 6)), "=d" (*(str + 7)) : "a" (0x80000003));
 
-	asm volatile("mov $0x80000004, %%eax;"
-				"cpuid;"
-				: "=a" (*(str + 8)), "=b" (*(str + 9)), "=c" (*(str + 10)), "=d" (*(str + 11)));
-
-	asm volatile("pop %%edx;"
-				"pop %%ecx;"
-				"pop %%ebx;"
-				"pop %%eax;" : :);
+    asm volatile("cpuid;" : "=a" (*(str + 8)), "=b" (*(str + 9)), "=c" (*(str + 10)), "=d" (*(str + 11)) : "a" (0x80000004));
 }
 
 #ifdef __cplusplus
@@ -81,7 +58,7 @@ void task1()
 
     while(1)
 	{
-		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
+        asm("int $0x30" :: "b" (msg), "a" (0x01));
         for(int i = 0; i < 1000000; i++);
     }
 
@@ -192,7 +169,7 @@ int main(struct mb_partial_info *mbinfo)
     s.printInfo("Initialisation de l'horloge...");
 	outb(0x43, 0x34);
 	outb(0x40, (0x1234DE / 50) & 0x00FF);
-	outb(0x40, (0x1234DE / 50) & 0xFF00);
+    outb(0x40, (0x1234DE / 50) >> 8);
 //    s.okMsg();
 
 
@@ -265,7 +242,7 @@ int main(struct mb_partial_info *mbinfo)
 
     s.printError("Address : %p", info->PhysBasePtr);
 
-	sti;
+    sti;
 
 	for(;;)
 		asm("hlt");
