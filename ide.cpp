@@ -134,13 +134,16 @@ void IdeDrive::displayPartitions()
 		if(!data)
 			return;
 			
-		const char* isExt2 = (Ext2FS::isExt2FS(data)) ? "Ext2 Part" : "Unk Part";
+        const char* isExt2 = (Ext2FS::isExt2FS(data) && p.size != 0) ? "Ext2 Part" : "Unk Part";
+
+
 		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
 
-        /*if(strcmp(isExt2, "Ext2 Part") == 0)
+        if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
             Ext2FS fs(p, *this);
-            struct file * f = fs.getDirEntries(fs.getRoot());
+
+            struct file * f = fs.getDirEntries("/senchaProject");
             struct file *tmp = f;
 
 			bool cont = true;
@@ -150,29 +153,29 @@ void IdeDrive::displayPartitions()
 				if(tmp)
 				{
                     if(fs.isDirectory(tmp))
-						Screen().printDebug("Dir %s", tmp->name);
+                        Screen::getScreen().printDebug("Dir %s", tmp->name);
 					else
-						Screen().printDebug("File %s", tmp->name);
+                        Screen::getScreen().printDebug("File %s", tmp->name);
 
                     if(String(tmp->name) == String("taMere.txt"))
 					{
-                        Screen().print("Data %s : ", tmp->name);
+                        Screen::getScreen().print("Data %s : ", tmp->name);
                         struct file *file = fs.getFile(tmp->name);
                         char *c = fs.readFile(file);
 
                         for(int i = 0; i < file->size; ++i, ++c)
-							Screen().print("%c", *c);
+                            Screen::getScreen().print("%c", *c);
 
-						Screen().print("\n");
-					}
+                        Screen::getScreen().print("\n");
+                    }
 
-					if(tmp->next == f || !tmp->next)
+                    if(tmp->next == f || !tmp->next)
 						cont = false;
 					else
 						tmp = tmp->next;
 				}
-			}
-        }*/
+            }
+        }
 
 		kfree(data);
 	}
@@ -277,7 +280,7 @@ void IdeDrive::diskSelect(int block, int n)
 	outb(_regPorts + ATA_LBA_MID, (uchar) (block >> 8)); //Next 8 bits
 	outb(_regPorts + ATA_LBA_HIGH, (uchar) (block >> 16)); //Next
 
-	//Drive indicator, magic bits and highest 4 bits of th block address
+    //Drive indicator, magic bits and highest 4 bits of the block address
 	outb(_regPorts + ATA_DRIVE, 0xE0 | (_role << 4) | ((block >> 24) & 0x0F));
 }
 
@@ -290,22 +293,30 @@ char* IdeDrive::read(int numblock, int count)
 
 	u16 tmp;
 	char *buffer = (char*)kmalloc(512 * count);
-	memset(buffer, 0, 512 * count);
+    memset(buffer, 0, 512 * count);
 
 	outb(_regPorts + ATA_COMMAND, ATA_READ);
 
 	while(!(inb(_regPorts + ATA_STATUS) & 0x08));
 
-	for(int idx = 0; idx < 256 * count; idx++)
+    for(int idx = 0; idx < 256 * count; idx++)
 	{
 		tmp = inw(_regPorts + ATA_DATA);
 		buffer[idx * 2] = (uchar) tmp;
 		buffer[idx * 2 + 1] = (uchar) (tmp >> 8);
-	}
+        while((inb(_regPorts + ATA_STATUS) >> 7));
+    }
 
-	return buffer;
+    return buffer;
 }
 
+/**
+ * @brief IdeDrive::read Reads <em>count</em> bytes of data from <em>offset</em> bytes on disk
+ * and put the read data in <em>buffer</em>
+ * @param offset Offset in bytes where we start getting data
+ * @param buffer Buffer to fill
+ * @param count Number in bytes to read
+ */
 void IdeDrive::read(int offset, char *buffer, int count)
 {
 	int blockBegin, blockEnd, blockNbr;
@@ -313,17 +324,17 @@ void IdeDrive::read(int offset, char *buffer, int count)
 	blockBegin = offset / 512;
 	blockEnd = (offset + count) / 512;
 
-	blockNbr = blockEnd - blockBegin + 1;
+    blockNbr = blockEnd - blockBegin + 1;
 
     const char *data = read(blockBegin, blockNbr);
 
-	if(data)
+    if(data)
 	{
 		memcpy(buffer, (data + offset % 512), count);
 		kfree(data);
 	}
 	else
-		memset(buffer, 0, count);
+        memset(buffer, 0, count);
 }
 
 void IdeDrive::write(int numblock, int count, const char * const data)
