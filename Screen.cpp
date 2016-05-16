@@ -142,6 +142,7 @@ void Screen::dump(const uchar* addr, int n)
 		putcar(c1);
 		putcar(c2);
 	}
+    println("");
 }
 
 void Screen::switchCursor()
