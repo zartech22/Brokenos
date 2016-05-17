@@ -1,10 +1,6 @@
 build/
 build/*
-Kernel/
 kernel
-floppyA
-floppy.img
-c.img
 os.*
 *.*~
 *~
