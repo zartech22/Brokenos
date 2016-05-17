@@ -89,43 +89,36 @@ public:
         {
             for(int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
             {
-                int pos = x + y;
-                _frameBuffer[pos] = _buffer[pos + _bytePerLine];
-                _frameBuffer[pos + 1] = _buffer[pos + _bytePerLine + 1];
-                _frameBuffer[pos + 2] = _buffer[pos + _bytePerLine + 2];
-                _frameBuffer[pos + 3] = _buffer[pos + _bytePerLine + 3];
+                pos = x + y;
+
+                val1 = _buffer[pos + 3] << 24 | _buffer[pos + 2] << 16 | _buffer[pos + 1] << 8 | _buffer[pos];
+                val2 = _buffer[pos + _bytePerLine * 8 + 3] << 24 | _buffer[pos + 2 + _bytePerLine * 8] << 16 | _buffer[pos + 1 + _bytePerLine * 8] << 8 | _buffer[pos + _bytePerLine * 8];
+
+                if(val1 != val2)
+                {
+                    _frameBuffer[pos] = _buffer[pos + _bytePerLine * 8];
+                    _frameBuffer[pos + 1] = _buffer[pos + _bytePerLine * 8 + 1];
+                    _frameBuffer[pos + 2] = _buffer[pos + _bytePerLine * 8 + 2];
+                    _frameBuffer[pos + 3] = _buffer[pos + _bytePerLine * 8 + 3];
+                }
             }
         }
 
-        /*for(int y = _bytePerLine * (n - 1) * 8; y < _maxY * 8 * _bytePerLine; y += _bytePerLine)
+        for(int y = videoEnd - _bytePerLine * 8; y < videoEnd; y += _bytePerLine)
         {
-            for(int x = 0; x < _bytePerLine; x += _bitsPerPixel / 8)
+            for(int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
             {
                 pos = x + y;
 
                 val1 = _buffer[pos + 3] << 24 | _buffer[pos + 2] << 16 | _buffer[pos + 1] << 8 | _buffer[pos];
-                val2 = _buffer[pos + _bytePerLine + 3] << 24 | _buffer[pos + 2 + _bytePerLine] << 16 | _buffer[pos + 1 + _bytePerLine] << 8 | _buffer[pos + _bytePerLine];
 
-                //if(val1 == val2)
-                //{
-                    _frameBuffer[pos] = _buffer[pos + _bytePerLine];
-                    _frameBuffer[pos + 1] = _buffer[pos + _bytePerLine + 1];
-                    _frameBuffer[pos + 2] = _buffer[pos + _bytePerLine + 2];
-                    _frameBuffer[pos + 3] = _buffer[pos + _bytePerLine + 3];
-                //}
+                if(val1 != 0)
+                    _frameBuffer[pos] = _frameBuffer[pos + 1] = _frameBuffer[pos + 2] = _frameBuffer[pos + 3] = 0;
             }
-        }*/
-
+        }
 
         memcpy((char*)_buffer, (char*)offset, (_buffer + videoEnd - offset));
         memset((char*)(_buffer + videoEnd - (n * _bytePerLine * 8)), 0, _bytePerLine * 8 * n);
-
-        /*if(_bytePerLine % 32 == 0)
-        {
-            asm("rep movsd" :: "c" (videoEnd * 8 / 32), "S" (_buffer), "D" (_frameBuffer));
-        }
-        else
-            memcpy((char*)_frameBuffer, (char*)_buffer, (videoEnd));*/
 
         _posY -= n;
     }
