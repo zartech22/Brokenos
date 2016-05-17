@@ -24,6 +24,7 @@ public:
             *video = c;
             *(video + 1) = getColor();
             _posX++;
+
             if(_posX > _maxX)
             {
                 _posX = 0;

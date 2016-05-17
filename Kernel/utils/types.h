@@ -3,10 +3,10 @@
 
 #include <stddef.h>
 
-typedef unsigned char u8;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned char uchar;
+typedef unsigned char   u8;
+typedef unsigned short  u16;
+typedef unsigned int    u32;
+typedef unsigned char   uchar;
 
 struct mb_partial_info
 {

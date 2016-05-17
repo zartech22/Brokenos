@@ -139,7 +139,7 @@ void IdeDrive::displayPartitions()
 
 		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
 
-        if(strcmp(isExt2, "Ext2 Part") == 0)
+        /*if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
             Ext2FS fs(p, *this);
 
@@ -175,7 +175,7 @@ void IdeDrive::displayPartitions()
 						tmp = tmp->next;
 				}
             }
-        }
+        }*/
 
 		kfree(data);
 	}

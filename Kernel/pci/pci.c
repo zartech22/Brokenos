@@ -62,7 +62,7 @@ u8 pciConfigReadByte(u8 bus, u8 slot, u8 function, u8 offset)
 	return tmp;
 }
 
-u16 pciCheckVendor(u8 bus, u8 slot)
+inline u16 pciCheckVendor(u8 bus, u8 slot)
 {	
 	return pciConfigReadWord(bus, slot, 0, 0);
 }
@@ -191,7 +191,7 @@ void displayIDECtrl(u8 bus, u8 device, u8 function)
 {
 	u32 bars[4];
 	
-	for(int i = 0; i < 4; i++)
+    for(u8 i = 0; i < 4; i++)
 		bars[i] = pciConfigReadDWord(bus, device, function, 0x10 + 4 * i);
 	
 	bars[0] = pciConfigReadDWord(bus, device, function, 0x10);

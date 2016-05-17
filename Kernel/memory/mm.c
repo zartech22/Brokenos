@@ -12,9 +12,9 @@ char* get_page_frame()
 {
 	int page = -1;
 	
-	for(int byte = 0; byte < RAM_MAXPAGE / 8; byte++)
+    for(unsigned int byte = 0; byte < RAM_MAXPAGE / 8; byte++)
 		if(mem_bitmap[byte] != 0xFF)
-			for(int bit = 0; bit < 8; bit++)
+            for(u8 bit = 0; bit < 8; bit++)
 				if(!(mem_bitmap[byte] & (1 << bit)))
 				{
 					page = 8 * byte + bit;
@@ -145,13 +145,13 @@ void init_mm(u32 high_mem)
 	pg_limit = (high_mem * 1024) / PAGESIZE;
 	
 	//init bitmap
-	for(int pg = 0; pg < pg_limit / 8; pg++)
+    for(unsigned int pg = 0; pg < pg_limit / 8; pg++)
 		mem_bitmap[pg] = 0;
 	
-	for(int pg = pg_limit / 8; pg < RAM_MAXPAGE / 8; pg++)
+    for(unsigned int pg = pg_limit / 8; pg < RAM_MAXPAGE / 8; pg++)
 		mem_bitmap[pg] = 0xFF;
 		
-	for(int pg = PAGE(0x0); pg < PAGE((u32) pg1_end); pg++)
+    for(unsigned int pg = PAGE(0x0); pg < PAGE((u32) pg1_end); pg++)
 		set_page_frame_used(pg);
 	
 	//Init rep de pages
@@ -291,7 +291,6 @@ int pd_add_page(char *v_addr, char *p_addr, int flags, struct page_directory *pd
 	u32 *pt;		/* adresse virtuelle de la table de pages */
 	struct page *newpg;
 	struct page_list *pglist;
-	int i;
 
 	//// printk("DEBUG: pd_add_page(%p, %p, %d)\n", v_addr, p_addr, flags); /* DEBUG */
 
@@ -317,7 +316,7 @@ int pd_add_page(char *v_addr, char *p_addr, int flags, struct page_directory *pd
 
 		/* On initialise la nouvelle table de pages */
 		pt = (u32 *) newpg->v_addr;
-		for (i = 1; i < 1024; i++)
+        for (u16 i = 1; i < 1024; i++)
 			pt[i] = 0;
 
 		/* On ajoute l'entree correspondante dans le repertoire */

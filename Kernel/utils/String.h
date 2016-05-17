@@ -14,23 +14,23 @@ public:
     String(const String &o) : String(o._str) {}
     virtual ~String() { delete _str; }
 
-    size_t size() const { return strlen(_str); }
+    inline size_t size() const { return strlen(_str); }
 
-    void clear() { _str[0] = 0; }
-    bool empty() const { return (strlen(_str) == 0); }
+    inline void clear() { _str[0] = 0; }
+    inline bool empty() const { return (strlen(_str) == 0); }
 
     String& append(const String &o);
 
     String& operator=(const String &o);
 
     String& operator+=(const String &o);
-    char& operator[](size_t pos) { return _str[pos]; }
-    const char& operator[](size_t pos) const { return _str[pos]; }
+    inline char& operator[](size_t pos) { return _str[pos]; }
+    inline const char& operator[](size_t pos) const { return _str[pos]; }
 
-    char& at(size_t pos) { return _str[pos]; }
-    const char& at(size_t pos) const { return _str[pos]; }
+    inline char& at(size_t pos) { return _str[pos]; }
+    inline const char& at(size_t pos) const { return _str[pos]; }
 
-    const char* c_str() const { return _str; }
+    inline const char* c_str() const { return _str; }
 
 private:
     char *_str;

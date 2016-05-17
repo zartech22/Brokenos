@@ -22,7 +22,7 @@ void operator delete[](void *meme);
 #ifdef __cplusplus
 	extern "C" {
 #endif
-void* ksbrk(int);
+void* ksbrk(unsigned int);
 void* kmalloc(unsigned long);
 void kfree(const void*);
 #ifdef __cplusplus

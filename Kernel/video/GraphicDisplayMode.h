@@ -33,9 +33,9 @@ public:
             if(_posX == _maxX)
                 putcar('\n');
 
-            for (int x = 0; x < 8; x++)
+            for (unsigned int x = 0; x < 8; x++)
             {
-                for (int y = 0; y < 8; y++)
+                for (unsigned int y = 0; y < 8; y++)
                 {
                     if(letter[x] & 1 << y)
                     {
@@ -72,22 +72,22 @@ public:
 
     virtual void scrollup(u8 n) override
     {
-        int const videoEnd = ((_maxY + 1) * _bytePerLine * 8);
+        unsigned int const videoEnd = ((_maxY + 1) * _bytePerLine * 8);
         uchar *offset = _buffer + n * _bytePerLine * 8;
 
 
         //memcpy((char*)_frameBuffer, (char*)offset, (videoEnd - (_frameBuffer + n * _bytePerLine * 8)));
 
-        int pos;
+        unsigned int pos;
         u32 val1, val2;
 
         while(inb(0x3DA) & 0x08);
         while(!(inb(0x3DA) & 0x08));
 
 
-        for(int y = _bytePerLine * (n - 1) * 8; y < _maxY * _bytePerLine * 8; y += _bytePerLine)
+        for(unsigned int y = _bytePerLine * (n - 1) * 8; y < _maxY * _bytePerLine * 8; y += _bytePerLine)
         {
-            for(int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
+            for(unsigned int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
             {
                 pos = x + y;
 
@@ -104,9 +104,9 @@ public:
             }
         }
 
-        for(int y = videoEnd - _bytePerLine * 8; y < videoEnd; y += _bytePerLine)
+        for(unsigned int y = videoEnd - _bytePerLine * 8; y < videoEnd; y += _bytePerLine)
         {
-            for(int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
+            for(unsigned int x = 0; x < (_maxX + 1) * 8 * _pixelWidth; x += _pixelWidth)
             {
                 pos = x + y;
 
@@ -148,10 +148,7 @@ public:
         }
     }
 
-    virtual void clean() override
-    {
-        memset((char*)_frameBuffer, 0, (_maxY + 1) * _bytePerLine * 8);
-    }
+    inline virtual void clean() override { memset((char*)_frameBuffer, 0, (_maxY + 1) * _bytePerLine * 8); }
 
 private:
     friend class Screen;

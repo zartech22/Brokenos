@@ -31,10 +31,8 @@ void init_idt_desc(u16 select, u32 offset, u16 type, struct idtdesc *desc)
 void init_idt()
 {
 	//init desc sys par def.
-	for(int i = 0; i < IDTSIZE; i++)
+    for(u8 i = 0; i < IDTSIZE; i++)
 		init_idt_desc(0x08, (u32) _asm_default_int, INTGATE, &kidt[i]);
-	/*for(i = 0; i < 32; i++)
-		init_idt_desc(0x08, (u32) _asm_default_exc, INTGATE, &kidt[i]);*/
 	
 	//exceptions
 	init_idt_desc(0x08, (u32) _asm_exc_GP, INTGATE, &kidt[13]);

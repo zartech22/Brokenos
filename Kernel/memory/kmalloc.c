@@ -24,7 +24,7 @@ void operator delete[](void *mem)
 	kfree(mem);
 }
 
-void* ksbrk(int n)
+void* ksbrk(unsigned int n)
 {
 	struct kmalloc_header *chunk;
 	char *p_addr;
@@ -38,7 +38,7 @@ void* ksbrk(int n)
 	chunk = (struct kmalloc_header*) kern_heap;
 	
 	//Alloc page libre
-	for(int i = 0; i < n; i++)
+    for(unsigned int i = 0; i < n; i++)
 	{
 		p_addr = get_page_frame();
 		

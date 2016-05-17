@@ -40,7 +40,7 @@ int strcmp(const char *s1, const char *s2)
 		return 0;
 }
 
-void itoa(char *buf, unsigned long int n, int base)
+void itoa(char *buf, unsigned long int n, unsigned int base)
 {
 	unsigned long int tmp;
 	int i;
@@ -68,9 +68,7 @@ void strcpy(char* dest, const char* src)
     while((dest[i] = src[i++]));
 }
 
-bool operator ==(const String &str1, const String &str2)
+inline bool operator ==(const String &str1, const String &str2)
 {
-    bool res = (strcmp(str1.c_str(), str2.c_str()) == 0);
-    return res;
+    return (strcmp(str1.c_str(), str2.c_str()) == 0);
 }
-

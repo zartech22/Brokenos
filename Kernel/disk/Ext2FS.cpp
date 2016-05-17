@@ -13,8 +13,6 @@ bool Ext2FS::isExt2FS(char *data)
 		return false;
 	}
 
-    Screen::getScreen().printError("Ext2part : %x", ((struct ext2_super_block*)data)->ext2_magic);
-
 	return (((struct ext2_super_block*)data)->ext2_magic == EXT2_MAGIC_NUMBER);
 }
 

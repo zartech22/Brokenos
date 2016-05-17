@@ -179,7 +179,7 @@ class Ext2FS : public FileSystem
         struct ext2_super_block *_sb;
 		struct ext2_group_desc *_groups;
 
-		void readSuperBlock();
+        inline void readSuperBlock();
 		void readGroupBlock();
 
         virtual void initFsRoot() override;

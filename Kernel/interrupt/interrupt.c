@@ -6,8 +6,6 @@
 #include <interrupt/scheduler.h>
 #include <interrupt/interrupt.h>
 
-void love();
-
 void isr_default_int()
 {
 	//print("An interrupt has been catch !\n");
@@ -172,12 +170,6 @@ void isr_kbd_int()
 	
     /*if(kbdmap[i * 4] == 'l')
         Screen::getScreen().showLoadScreen();*/
-}
-
-void love()
-{
-	Screen::getScreen().print("Coucou ! Je suis le kernel et je t'aime fort !!\n");
-	Screen::getScreen().show_cursor();
 }
 
 void do_syscall(int sys_num)

@@ -106,12 +106,12 @@ void schedule()
 		
 	newpid = 0;
 	
-	for(int i = current->pid + 1; i < MAXPID && newpid == 0; i++)
+    for(unsigned int i = current->pid + 1; i < MAXPID && newpid == 0; i++)
 		if(p_list[i].state == 1)
 			newpid = i;
 	
 	if(!newpid)
-		for(int i = 1; i < current->pid && newpid == 0; i++)
+        for(unsigned int i = 1; i < current->pid && newpid == 0; i++)
 			if(p_list[i].state == 1)
 				newpid = i;
 	

@@ -9,7 +9,7 @@ void* memcpy(char *, const char *, unsigned int);
 void* memset(char*, int, unsigned int);
 int strlen(const char*);
 int strcmp(const char*, const char*);
-void itoa(char*, unsigned long int, int);
+void itoa(char*, unsigned long int, unsigned int);
 void strcpy(char*, const char*);
 
 #ifdef __cplusplus
@@ -17,6 +17,6 @@ void strcpy(char*, const char*);
 #endif
 
 class String;
-bool operator==(const String &str1, const String &str2);
+inline bool operator==(const String &str1, const String &str2);
 
 #endif

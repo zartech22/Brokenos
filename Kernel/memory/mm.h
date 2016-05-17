@@ -103,7 +103,7 @@ char *get_page_frame();
 
 //selectionne / libere page libre dans le bitmap et l'associe a page virtuelle libre du heap
 struct page* get_page_from_heap();
-int release_page_from_heap(char*);
+int release_page_from_heap(char *);
 
 //init les struct de donnees de gestion de la memoire
 void init_mm(u32);
