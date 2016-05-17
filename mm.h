@@ -14,16 +14,16 @@
 #define GDTBASE 0x00001800 // addr phys GDT
 
 //#define	KERN_PDIR		0x00001000
-#define	KERN_PDIR		0x00002000
-#define	KERN_STACK		0x0009FFF0
-#define	KERN_BASE		0x00100000
+#define	KERN_PDIR           0x00002000
+#define	KERN_STACK          0x0009FFF0
+#define	KERN_BASE           0x00100000
 #define KERN_PG_HEAP		0x00800000
 #define KERN_PG_HEAP_LIM	0x10000000
-#define KERN_HEAP		0x10000000
+#define KERN_HEAP           0x10000000
 #define KERN_HEAP_LIM		0x40000000
 
 #define	USER_OFFSET 		0x40000000
-#define	USER_STACK 		0xE0000000
+#define	USER_STACK          0xE0000000
 
 #define VADDR_PD_OFFSET(addr)	((addr) & 0xFFC00000) >> 22
 #define VADDR_PT_OFFSET(addr)	((addr) & 0x003FF000) >> 12

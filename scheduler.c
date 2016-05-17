@@ -51,7 +51,7 @@ void switch_to_task(int n, int mode)
 			"m"(cs), \
 			"m"(current->regs.eip), \
 			"m"(current), \
-			[KMODE] "i"(KERNELMODE), \
+            [KMODE] "i"(KERNELMODE), \
 			[mode] "g"(mode)
 		);
 }

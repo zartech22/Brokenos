@@ -70,6 +70,7 @@ void strcpy(char* dest, const char* src)
 
 bool operator ==(const String &str1, const String &str2)
 {
-    return (strcmp(str1.c_str(), str2.c_str()) == 0);
+    bool res = (strcmp(str1.c_str(), str2.c_str()) == 0);
+    return res;
 }
 
