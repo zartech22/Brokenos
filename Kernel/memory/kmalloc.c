@@ -113,6 +113,36 @@ void* kmalloc(unsigned long size)
 	return (char*) chunk + sizeof(struct kmalloc_header);
 }
 
+void* krealloc(const void *ptr, unsigned long size)
+{
+    if(!ptr)
+        return kmalloc(size);
+    if(size == 0)
+    {
+        kfree(ptr);
+        return 0;
+    }
+
+    struct kmalloc_header *chunk = (struct kmalloc_header*)(ptr - sizeof(struct kmalloc_header));
+
+    if(size > chunk->size)
+    {
+        void *newPtr = kmalloc(size);
+        memcpy((char*)newPtr, (char*)ptr, chunk->size);
+        kfree(ptr);
+        return newPtr;
+    }
+    else
+    {
+        struct kmalloc_header *other = (kmalloc_header*)(ptr + size);
+        other->size = chunk->size - size;
+        other->used = 0;
+
+        chunk->size = size;
+        return ptr;
+    }
+}
+
 void kfree(const void *v_addr)
 {
 	struct kmalloc_header *chunk, *other;
