@@ -10,7 +10,7 @@ export CFLAGS
 all: link
 
 link: compile
-	$(LD) $(LDFLAGS) build/boot.o build/int32.o build/icxxabi.o build/kernel.o build/pci.o build/Ext2FS.o build/ide.o build/kmalloc.o build/gdt.o build/idt.o build/int.o build/interrupt.o build/lib.o build/mm.o build/pic.o build/Screen.o build/do_switch.o build/scheduler.o build/process.o -o kernel
+	$(LD) $(LDFLAGS) build/boot.o build/int32.o build/icxxabi.o build/kernel.o build/pci.o build/Ext2FS.o build/ide.o build/kmalloc.o build/gdt.o build/idt.o build/int.o build/interrupt.o build/lib.o build/mm.o build/pic.o build/Screen.o build/do_switch.o build/scheduler.o build/process.o build/String.o -o kernel
 
 compile:
 	$(MAKE) -C asm
