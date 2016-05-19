@@ -1,9 +1,8 @@
-#include "String.h"
+#include <utils/String.h>
 
 String& String::operator =(const String &o)
 {
-    delete[] _str;
-    _str = new char[o.size() + 1];
+    _str = (char*)krealloc(_str, o.size() + 1);
     strcpy(_str, o._str);
 
     return *this;
@@ -11,12 +10,9 @@ String& String::operator =(const String &o)
 
 String& String::operator +=(const String &o)
 {
-    char *tmp = new char[size() + o.size() + 1];
-    memcpy(tmp, _str, size());
-    memcpy(tmp + size(), o._str, o.size() + 1);
+    _str = (char*)krealloc(_str, size() + o.size() + 1);
 
-    delete[] _str;
-    _str = tmp;
+    memcpy((_str + size()), o._str, o.size() + 1);
 
     return *this;
 }
