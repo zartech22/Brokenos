@@ -24,7 +24,7 @@ void operator delete[](void *meme);
 #endif
 void* ksbrk(unsigned int);
 void* kmalloc(unsigned long);
-void* krealloc(const void*, unsigned long);
+void* krealloc(void*, unsigned long);
 void kfree(const void*);
 #ifdef __cplusplus
 }

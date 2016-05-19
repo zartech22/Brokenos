@@ -113,7 +113,7 @@ void* kmalloc(unsigned long size)
 	return (char*) chunk + sizeof(struct kmalloc_header);
 }
 
-void* krealloc(const void *ptr, unsigned long size)
+void* krealloc(void *ptr, unsigned long size)
 {
     if(!ptr)
         return kmalloc(size);
