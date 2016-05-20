@@ -14,24 +14,10 @@
 #include <utils/String.h>
 #include <utils/Vector.h>
 
+#include <core/cpu.h>
+
 void init_pic();
 int main(mb_partial_info *multiboot_info);
-
-void get_cpu_vendor(u32 str[3])
-{
-    asm volatile("xor %%eax, %%eax;"
-				"cpuid;"
-                : "=b" (*str), "=c" (*(str + 2)), "=d" (*(str + 1)) :: "%eax");
-}
-
-void get_cpu_brand(u32 str[12])
-{
-    asm volatile("cpuid;" : "=a" (*str), "=b" (*(str + 1)), "=c" (*(str + 2)), "=d" (*(str + 3)) : "a" (0x80000002));
-
-    asm volatile("cpuid;" : "=a" (*(str + 4)), "=b" (*(str + 5)), "=c" (*(str + 6)), "=d" (*(str + 7)) : "a" (0x80000003));
-
-    asm volatile("cpuid;" : "=a" (*(str + 8)), "=b" (*(str + 9)), "=c" (*(str + 10)), "=d" (*(str + 11)) : "a" (0x80000004));
-}
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,21 +102,8 @@ int main(struct mb_partial_info *mbinfo)
 	current->state = 1;
 	current->regs.cr3 = (u32) pd0;
 
-	char *vendor = (char*) kmalloc(13);
-	memset(vendor, 0, 13);
-
-	char *brand = (char*) kmalloc(49);
-	memset(brand, 0, 49);
-
-
-	get_cpu_vendor((u32*) vendor);
-	get_cpu_brand((u32*) brand);
-
-    s.println("Vendor : %s", vendor);
-	kfree(vendor);
-
-    s.println("Brand : %s", brand);
-	kfree(brand);
+    s.println("Vendor : %s", CPU::getVendor().c_str());
+    s.println("Brand : %s", CPU::getBrand().c_str());
 
     s.printDebug("PCI list :");
 	pciGetVendors();
