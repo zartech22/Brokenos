@@ -118,14 +118,14 @@ void Screen::setPos(u8 posX, u8 posY)
 void Screen::okMsg()
 {
 	_posY--;
-    printBlock("OK", 120 - 8 * strlen("OK"), Green);
+    printBlock("OK", _maxX - strlen("OK"), Green);
 	_posY++;
 }
 
 void Screen::failMsg()
 {
     _posY -= 8;
-    printBlock("FAIL", 120 - 8 * strlen("FAIL"), Red);
+    printBlock("FAIL", _maxX - strlen("FAIL"), Red);
 	_posY++;
 }
 

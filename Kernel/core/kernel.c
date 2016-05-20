@@ -9,6 +9,10 @@
 #include <memory/kmalloc.h>
 #include <pci/pci.h>
 #include <disk/ide.h>
+#include <utils/elf.h>
+
+#include <utils/String.h>
+#include <utils/Vector.h>
 
 void init_pic();
 int main(mb_partial_info *multiboot_info);
@@ -44,75 +48,6 @@ void kmain(struct mb_partial_info *memInfo)
     main(memInfo);
 }
 
-void task1()
-{
-	char * const msg = (char*) 0x40001000;
-
-	msg[0] = 'T';
-	msg[1] = 'a';
-	msg[2] = 's';
-	msg[3] = 'k';
-	msg[4] = '1';
-	msg[5] = '\n';
-	msg[6] = 0;
-
-    while(1)
-	{
-        asm("int $0x30" :: "b" (msg), "a" (0x01));
-        for(int i = 0; i < 1000000; i++);
-    }
-
-	return;
-}
-
-void task2()
-{
-	char * const msg = (char*) 0x40001000;
-
-	msg[0] = 'T';
-	msg[1] = 'a';
-	msg[2] = 's';
-	msg[3] = 'k';
-	msg[4] = '2';
-	msg[5] = '\n';
-	msg[6] = 0;
-
-	while(1)
-	{
-		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-		for(int i = 0; i < 1000000; i++);
-	}
-
-	return;
-}
-
-void task3()
-{
-	char * const msg = (char*) 0x40001000;
-
-	msg[0] = 'J';
-	msg[1] = 'e';
-	msg[2] = ' ';
-	msg[3] = 's';
-	msg[4] = 'u';
-	msg[5] = 'i';
-	msg[6] = 's';
-	msg[7] = ' ';
-	msg[8] = 'T';
-	msg[9] = 'a';
-	msg[10] = 's';
-	msg[11] = 'k';
-	msg[12] = '3';
-	msg[13] = '\n';
-	msg[14] = 0;
-
-	while(1)
-	{
-		asm("mov %0, %%ebx; mov $0x01, %%eax; int $0x30" :: "m" (msg));
-		for(int i = 0; i < 1000000; i++);
-	}
-}
-
 int main(struct mb_partial_info *mbinfo)
 {
     init_gdt();
@@ -129,16 +64,16 @@ int main(struct mb_partial_info *mbinfo)
     Screen &s = Screen::getScreen();
 
     s.printInfo("Kernel charge en memoire !");
-    //s.okMsg();
+    s.okMsg();
     s.printInfo("kernel : chargement idt...");
-    //s.okMsg();
+    s.okMsg();
     s.printInfo("kernel : initialisation de la memoire...");
     s.println("kernel : paging actif !");
 
     s.printDebug("Info memoire : %uk (lower) %uk (upper)", mbinfo->low_mem, mbinfo->high_mem);
 
     s.printInfo("kernel : chargement nouvelle gdt...");
-//    s.okMsg();
+    s.okMsg();
     s.printInfo("\t->Reaffectation du registre SS et ESP...");
 
     struct VbeModeInfo *info = (struct VbeModeInfo*)mbinfo->vbe_mode_info;
@@ -151,26 +86,24 @@ int main(struct mb_partial_info *mbinfo)
     else
         s.printDebug("La merde...");
 
-    //displayTest(info, 'a');
-
 
     s.printInfo("kernel : configuration du PIC...");
     init_pic();
-//    s.okMsg();
+    s.okMsg();
 
     s.printInfo("kernel : init tss");
     asm("	movw $0x38, %ax \n \
             ltr %ax");
-//    s.okMsg();
+    s.okMsg();
 
     s.printInfo("kernel : reactivation des interruptions...");
-//    s.okMsg();
+    s.okMsg();
 
     s.printInfo("Initialisation de l'horloge...");
 	outb(0x43, 0x34);
 	outb(0x40, (0x1234DE / 50) & 0x00FF);
     outb(0x40, (0x1234DE / 50) >> 8);
-//    s.okMsg();
+    s.okMsg();
 
 
     s.printInfo("Kernel pret a l'action !");
@@ -182,30 +115,6 @@ int main(struct mb_partial_info *mbinfo)
 	current->pid = 0;
 	current->state = 1;
 	current->regs.cr3 = (u32) pd0;
-
-    //load_task((char*) &task1, 0x2000);
-    /*load_task((char*) &task2, 0x2000);*/
-
-	/*** TEST DISK ***/
-
-	/*char *msg = "Hello world\n";
-	char *buf;
-
-	buf = (char*) kmalloc(512);
-
-	memset(buf, 0, 512);
-
-	memcpy((char*) buf, (char*) msg, strlen(msg) + 1);
-	printInfo("Test ecriture sur disque");
-	bl_write(1, 2, 1, buf);
-
-	char *buf = (char*)kmalloc(512);
-	memset(buf, 0, 512);
-
-	bl_read(1, 2, 1, buf);
-
-	printInfo("Test lecture sur disque");
-	printk("buf : %s\n", buf);//*/
 
 	char *vendor = (char*) kmalloc(13);
 	memset(vendor, 0, 13);
@@ -227,12 +136,6 @@ int main(struct mb_partial_info *mbinfo)
 	pciGetVendors();
 
     IdeDrive &d = ctrl.getDrive(PrimaryBus, Master);
-
-	/*char *buffer = (char*)kmalloc(512);
-	memset(buffer, 0, 512);
-	strcpy(buffer, "Salut, je suis un petit test !");
-
-	d.write(2, 1, buffer);*/
 
     d.displayPartitions();
 
