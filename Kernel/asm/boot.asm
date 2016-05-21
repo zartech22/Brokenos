@@ -14,9 +14,7 @@ extern kmain
 %define MULTIBOOT_HEADER_DEPTH	    0x00000020
 %define CHECKSUM -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
 
-_start:
-	jmp start
-
+SECTION .multiboot
 align 4
 multiboot_header:
 dd MULTIBOOT_HEADER_MAGIC
@@ -27,6 +25,11 @@ dd MULTIBOOT_HEADER_MODE_TYPE
 dd MULTIBOOT_HEADER_WIDTH
 dd MULTIBOOT_HEADER_HEIGHT
 dd MULTIBOOT_HEADER_DEPTH
+
+SECTION .text
+
+_start:
+	jmp start
 
 start:
 	push ebx
