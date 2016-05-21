@@ -19,6 +19,8 @@ public:
     Vector(unsigned int n, T val = T()) : _size(0), _cap(n), _tab(new T[_cap]) { for(u8 i = 0; i < n; ++i) push_back(val); }
     Vector(const Vector &x) {}
 
+    ~Vector() { clear(); }
+
     unsigned int size() const { return _size; }
     unsigned int capacity() const { return _cap; }
 
