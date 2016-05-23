@@ -51,8 +51,6 @@ public:
 
         _tab[_size] = val;
         _size++;
-
-        Screen::getScreen().printDebug("Val : %d, size %d, cap %d, tab %d", val, _size, _cap, _tab[_size - 1]);
     }
 
     void pop_back() { if(is_pointer<T>::value) delete _tab[size() - 1]; _size--; }
