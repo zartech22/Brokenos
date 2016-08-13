@@ -5,6 +5,7 @@
 #include <utils/types.h>
 #include <disk/ide.h>
 #include <utils/lib.h>
+#include <utils/Vector.h>
 
 /*namespace FileSystem
 {*/
@@ -24,7 +25,17 @@
     class FileSystem
     {
     public:
-        FileSystem(struct Partition &part, IdeDrive &drive) : _part(part), _drive(drive), _fsRoot(new file) { memset((char*)_fsRoot, 0, sizeof(struct file)); }
+        FileSystem(const struct Partition &part, IdeDrive &drive) : _part(part), _drive(drive)
+        {
+            _fsRoot = new struct file;
+            memset((char*)_fsRoot, 0, sizeof(struct file));
+
+            if(!_fsList)
+                _fsList = new Vector<FileSystem*>;
+
+            _fsList->push_back(this);
+        }
+
         virtual ~FileSystem()
         {
             if(_fsRoot->content != 0)
@@ -37,13 +48,16 @@
             delete _fsRoot;
         }
 
+        static const Vector<FileSystem*>& getFsList() { return *_fsList; }
+
         virtual void initFsRoot() = 0;
 
-        struct Partition& getPartition() const { return _part; }
+        const struct Partition& getPartition() const { return _part; }
         IdeDrive& getDrive() const { return _drive; }
         struct file* getRoot() const { return _fsRoot; }
 
         virtual char* readFile(const char *path) = 0;
+        virtual char* readFile(struct file*) = 0;
         virtual struct file* getFile(const char *path) = 0;
 
         virtual bool isDirectory(struct file *file) = 0;
@@ -55,15 +69,18 @@
         char* readFromDisk(int offset, int bytes)
         {
             char *data = (char*)kmalloc(bytes);
+            memset(data, 0, bytes);
             _drive.read(_part.s_lba * 512 + offset, data, bytes);
             return data;
         }
     private:
-        struct Partition &_part;
+        const struct Partition _part;
         IdeDrive &_drive;
         struct file *_fsRoot;
-    };
 
+        static Vector<FileSystem*> *_fsList;
+
+    };
 //}
 
 #endif // FILESYSTEM_H

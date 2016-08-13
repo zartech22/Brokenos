@@ -157,9 +157,13 @@ class Ext2FS : public FileSystem
 {
     public:
         Ext2FS(struct Partition&, IdeDrive&);
+        ~Ext2FS() { Screen::getScreen().printError("Fin Ext2FS"); }
+
+        Ext2FS(const Ext2FS &o) : FileSystem(*this) { Screen::getScreen().printError("Copie"); }
 
         virtual char* readFile(const char *path) override;
-        char* readFile(struct file*);
+        virtual char* readFile(struct file*) override;
+
         virtual struct file* getFile(const char *name) override;
 
         struct ext2_inode* readInode(int num);

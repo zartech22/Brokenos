@@ -14,9 +14,13 @@ public:
                     "cpuid;"
                     : "=b" (*vendor), "=c" (*(vendor + 2)), "=d" (*(vendor + 1)) :: "%eax");
 
-        vendor[13] = '\0';
+        vendor[12] = '\0';
 
-        return String((char*)vendor);
+        String res((char*)vendor);
+
+        kfree(vendor);
+
+        return res;
     }
 
     static String getBrand()
@@ -27,9 +31,13 @@ public:
         asm volatile("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));
         asm volatile("cpuid;" : "=a" (*(brand + 8)), "=b" (*(brand + 9)), "=c" (*(brand + 10)), "=d" (*(brand + 11)) : "a" (0x80000004));
 
-        brand[49] = '\0';
+        brand[48] = '\0';
 
-        return String((char*)brand);
+        String res((char*)brand);
+
+        kfree(brand);
+
+        return res;
     }
 };
 
