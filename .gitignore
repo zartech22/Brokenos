@@ -1,5 +1,6 @@
 Kernel/build/*.o
 kernel
+user/build/*
 os.*
 *.*~
 *~
