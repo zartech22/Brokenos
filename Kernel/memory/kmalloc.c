@@ -115,26 +115,33 @@ void* kmalloc(unsigned long size)
 
 void* krealloc(void *ptr, unsigned long size)
 {
+    asm("hlt");
+
     if(!ptr)
         return kmalloc(size);
+
     if(size == 0)
     {
         kfree(ptr);
         return 0;
     }
 
-    struct kmalloc_header *chunk = (struct kmalloc_header*)(ptr - sizeof(struct kmalloc_header));
+    struct kmalloc_header *chunk = (struct kmalloc_header*)((char*)ptr - sizeof(struct kmalloc_header));
+
+    if(!chunk->used || !chunk->size)
+        asm("hlt");
 
     if(size > chunk->size)
     {
         void *newPtr = kmalloc(size);
         memcpy((char*)newPtr, (char*)ptr, chunk->size);
         kfree(ptr);
+
         return newPtr;
     }
     else
     {
-        struct kmalloc_header *other = (kmalloc_header*)(ptr + size);
+        struct kmalloc_header *other = (kmalloc_header*)((char*)ptr + size);
         other->size = chunk->size - size;
         other->used = 0;
 
@@ -148,7 +155,7 @@ void kfree(const void *v_addr)
 	struct kmalloc_header *chunk, *other;
 	
 	//On libere le bloc
-	chunk = (struct kmalloc_header*) (v_addr - sizeof(struct kmalloc_header));
+    chunk = (struct kmalloc_header*) ((char*)v_addr - sizeof(struct kmalloc_header));
 	chunk->used = 0;
 		
 	//On merge le nouveau bloc libere avec le suivant ci lui aussi libre
