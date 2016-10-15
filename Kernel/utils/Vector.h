@@ -11,7 +11,7 @@ struct is_pointer { static const bool value = false; };
 template<typename T>
 struct is_pointer<T*> { static const bool value = true; };
 
-template<typename T>
+template<typename T, bool destroyPtr = true>
 class Vector
 {
 public:
@@ -26,17 +26,17 @@ public:
 
     bool empty() const { return (size == 0); }
 
-    T& at(unsigned int n) { return _tab[n]; }
-    const T& at(unsigned int n) const { return _tab[n]; }
+    T& at(unsigned int n) { if(n >= _cap) Screen::getScreen().printError("Erreur %s : %u >= %u", __func__, n, _cap); return _tab[n]; }
+    const T& at(unsigned int n) const { if(n >= _cap) Screen::getScreen().printError("Erreur %s : %u >= %u", __func__, n, _cap); return _tab[n]; }
 
-    T& operator[](unsigned int n) { return _tab[n]; }
-    const T& operator[](unsigned int n) const { return _tab[n]; }
+    T& operator[](unsigned int n) { if(n >= _cap) Screen::getScreen().printError("Erreur Cap"); return _tab[n]; }
+    const T& operator[](unsigned int n) const { if(n >= _cap) Screen::getScreen().printError("Erreur Cap"); return _tab[n]; }
 
-    T& front() { return _tab[0]; }
-    const T& front() const { return _tab[0]; }
+    T& front() { if(empty()) asm("hlt"); return _tab[0]; }
+    const T& front() const { if(empty()) asm("hlt"); return _tab[0]; }
 
-    T& back() { return _tab[size]; }
-    const T& back() const { return _tab[size]; }
+    T& back() { if(empty()) asm("hlt"); return _tab[size]; }
+    const T& back() const { if(empty()) asm("hlt"); return _tab[size]; }
 
     T* data() { return _tab; }
     const T* data() const { return _tab; }
@@ -53,8 +53,8 @@ public:
         _size++;
     }
 
-    void pop_back() { if(is_pointer<T>::value) delete _tab[size() - 1]; _size--; }
-    void clear() { if(is_pointer<T>::value) for(unsigned int i = 0; i < size(); ++i) delete _tab[i]; _size = 0; }
+    void pop_back() { if(is_pointer<T>::value && destroyPtr) delete _tab[size() - 1]; _size--; }
+    void clear() { if(is_pointer<T>::value && destroyPtr) for(unsigned int i = 0; i < size(); ++i) delete _tab[i]; _size = 0; }
 
 private:
     T *_tab;
