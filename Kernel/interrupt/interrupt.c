@@ -5,6 +5,10 @@
 #include <memory/gdt.h>
 #include <interrupt/scheduler.h>
 #include <interrupt/interrupt.h>
+#include <core/process.h>
+#include <memory/kmalloc.h>
+#include <memory/mm.h>
+
 
 void isr_default_int()
 {
@@ -13,7 +17,7 @@ void isr_default_int()
 
 void isr_default_exc()
 {
-	Screen::getScreen().println("An Exception occurred !");
+    Screen::getScreen().println("Division by 0 !");
 }
 
 void isr_clock_int()
@@ -33,8 +37,7 @@ void isr_clock_int()
         else
             Screen::getScreen().putcar('.');
 	}
-	
-	schedule();
+    schedule();
 }
 
 void isr_GP_exc(u32 error)
@@ -45,8 +48,8 @@ void isr_GP_exc(u32 error)
     //asm("movl 60(%%ebp), %%eax;"
       //  "mov %%eax, %0;" : "=m"(fault_addr):);
 
-    Screen::getScreen().setPos(0, 0);
-    Screen::getScreen().clean();
+    //Screen::getScreen().setPos(0, 0);
+    //Screen::getScreen().clean();
     Screen::getScreen().printError("#GP");
     Screen::getScreen().printError("Faulting address : %p", fault_addr);
 
@@ -178,12 +181,50 @@ void do_syscall(int sys_num)
 	{
 		char *u_str;
 	
-		asm("mov %%ebx, %0" : "=m"(u_str) :);
+        asm("" : "=b"(u_str) :);
 		for(int i = 0; i < 10000; i++); //temporisation
 		cli;
 		Screen::getScreen().print(u_str);
 		sti;
 	}
+    else if(sys_num == 2)
+    {
+        u16 kss;
+        u32 kesp;
+
+        struct page_list *pl, *oldpl;
+
+        cli;
+
+        n_proc--;
+        current->state = 0;
+
+        pl = current->pglist;
+
+        while(pl)
+        {
+            release_page_frame(pl->page->p_addr);
+            kfree(pl->page);
+            oldpl = pl;
+            pl = pl->next;
+            kfree(oldpl);
+        }
+
+        release_page_frame((u32) get_p_addr((char*) USER_STACK));
+
+        kss = p_list[0].regs.ss;
+        kesp = p_list[0].regs.esp;
+
+        asm("mov %0, %%ss;"
+            "mov %1, %%esp;" :: "m"(kss), "m"(kesp));
+
+        release_page_from_heap((char*) ((u32) current->kstack.esp0 & 0xFFFFF000));
+
+        asm("mov %0, %%eax;"
+            "mov %%eax, %%cr3" :: "m"(pd0));
+
+        switch_to_task(0, KERNELMODE);
+    }
 	else
 		Screen::getScreen().printError("Unknown syscall !");
 	return;
