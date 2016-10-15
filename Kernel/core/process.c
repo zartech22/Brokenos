@@ -4,6 +4,8 @@
 #include <core/io.h>
 #include <memory/kmalloc.h>
 #include <utils/types.h>
+#include <disk/FileSystem.h>
+#include <utils/elf.h>
 
 #define __PLIST__
 #include "process.h"
@@ -116,4 +118,98 @@ int load_task(char *fn, u32 code_size)
 
 	return pid;
 	
+}
+
+int load_task(const char *filename)
+{
+    struct page_directory *pd;
+    struct page_list *pglist;
+    struct page *kstack;
+
+    char *file;
+    char *ustack;
+    u32 e_entry;
+
+    int pid;
+
+    pid = 1;
+
+    while (p_list[pid].state != 0 && pid++ < MAXPID);
+
+    if (p_list[pid].state != 0)
+    {
+        Screen::getScreen().printk("PANIC: not enough slot for processes\n");
+        return 0;
+    }
+
+    /* Cree un repertoire de pages */
+    pd = pd_create();
+
+    asm("mov %0, %%eax;"
+        "mov %%eax, %%cr3" :: "m"(pd->base->p_addr));
+
+    file = FileSystem::getFsList().at(0)->readFile(filename);
+
+    pglist = (struct page_list*)kmalloc(sizeof(struct page_list));
+    pglist->page = 0;
+    pglist->next = 0;
+    pglist->prev = 0;
+
+    e_entry = (u32) loadElf(file, pd, pglist);
+
+    kfree(file);
+
+    if(e_entry == 0)
+    {
+        asm("mov %0, %%eax;"
+            "mov %%eax, %%cr3" :: "m"(current->regs.cr3));
+
+        pd_destroy(pd);
+        return 0;
+    }
+
+    /* Cree la pile utilisateur */
+        ustack = get_page_frame();
+        pd_add_page((char *) USER_STACK, ustack, PG_USER, pd);
+
+        /* Cree la pile noyau */
+        kstack = get_page_from_heap();
+
+        n_proc++;
+
+        p_list[pid].pid = pid;
+
+        /* Initialise les registres */
+        p_list[pid].regs.ss = 0x33;
+        p_list[pid].regs.esp = USER_STACK + PAGESIZE - 16;
+        p_list[pid].regs.eflags = 0x0;
+        p_list[pid].regs.cs = 0x23;
+        p_list[pid].regs.eip = e_entry;
+        p_list[pid].regs.ds = 0x2B;
+        p_list[pid].regs.es = 0x2B;
+        p_list[pid].regs.fs = 0x2B;
+        p_list[pid].regs.gs = 0x2B;
+        p_list[pid].regs.cr3 = (u32) pd->base->p_addr;
+
+        p_list[pid].kstack.ss0 = 0x18;
+        p_list[pid].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
+
+        p_list[pid].regs.eax = 0;
+        p_list[pid].regs.ecx = 0;
+        p_list[pid].regs.edx = 0;
+        p_list[pid].regs.ebx = 0;
+
+        p_list[pid].regs.ebp = 0;
+        p_list[pid].regs.esi = 0;
+        p_list[pid].regs.edi = 0;
+
+        p_list[pid].pd = pd;
+        p_list[pid].pglist = pglist;
+
+        p_list[pid].state = 1;
+
+        asm("mov %0, %%eax;"
+            "mov %%eax, %%cr3":: "m"(current->regs.cr3));
+
+        return pid;
 }

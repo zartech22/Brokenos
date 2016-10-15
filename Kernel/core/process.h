@@ -39,15 +39,12 @@ struct process
 	struct process *current = 0;
 	int n_proc = 0;
 #else
-	extern struct process p_list[];
-	extern struct process *current;
-	extern int n_proc;
+    extern "C" struct process p_list[];
+    extern "C" struct process *current;
+    extern "C" int n_proc;
 #endif
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
+
 int load_task(char*, u32);
-#ifdef __cplusplus
-}
-#endif
+int load_task(const char *filename);
+

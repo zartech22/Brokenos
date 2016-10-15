@@ -2,6 +2,8 @@
 #include <memory/gdt.h>
 #include <core/process.h>
 
+#include <video/Screen.h>
+
 void switch_to_task(int n, int mode)
 {
 	u32 kesp, eflags;
@@ -17,7 +19,7 @@ void switch_to_task(int n, int mode)
 	
 	ss = current->regs.ss;
 	cs = current->regs.cs;
-	eflags = (current->regs.eflags | 0x200) & 0xFFFFBFFF;
+    eflags = (current->regs.eflags | 0x200) & 0xFFFFBFFF;
 	
 	if(mode == USERMODE)
 	{
@@ -41,7 +43,7 @@ void switch_to_task(int n, int mode)
 			push %5; \
 			push %6; \
 			push %7; \
-			ljmp $0x08, $do_switch"
+            ljmp $0x08, $do_switch"
 			:: \
 			"m"(kss), \
 			"m"(kesp), \
@@ -60,19 +62,21 @@ void schedule()
 {
 	struct process *p;
 	u32 *stack_ptr;
-	int newpid;
-	
+    int newpid;
 	
 	//Récup ds stack_ptr le poiteur vers registres sauvegardes
 	asm("mov (%%ebp), %%eax; mov %%eax, %0" : "=m" (stack_ptr) : );
 	
-	if(!n_proc)
+    if(!n_proc)
+    {
 		return;
-	else if(n_proc == 1 && current->pid != 0)
+    }
+    else if(n_proc == 1 && current->pid != 0)
+    {
 		return;
+    }
 	else
 	{
-
 		current->regs.eflags = stack_ptr[16];
 		current->regs.cs = stack_ptr[15];
 		current->regs.eip = stack_ptr[14];
@@ -97,14 +101,14 @@ void schedule()
 		{
 			current->regs.esp = stack_ptr[9] + 12;
 			current->regs.ss = default_tss.ss0;
-		}
+        }
 		
 		//sauve le tss
 		current->kstack.ss0 = default_tss.ss0;
 		current->kstack.esp0 = default_tss.esp0;
-	}
+    }
 		
-	newpid = 0;
+    newpid = 0;
 	
     for(unsigned int i = current->pid + 1; i < MAXPID && newpid == 0; i++)
 		if(p_list[i].state == 1)
@@ -114,9 +118,8 @@ void schedule()
         for(unsigned int i = 1; i < current->pid && newpid == 0; i++)
 			if(p_list[i].state == 1)
 				newpid = i;
-	
+
 	p = &p_list[newpid];
-	
 	//Commutation
 	if(p->regs.cs != 0x08)
 		switch_to_task(p->pid, USERMODE);

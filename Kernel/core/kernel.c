@@ -10,11 +10,16 @@
 #include <pci/pci.h>
 #include <disk/ide.h>
 #include <utils/elf.h>
+#include <disk/FileSystem.h>
 
 #include <utils/String.h>
 #include <utils/Vector.h>
 
 #include <core/cpu.h>
+
+
+
+#include <disk/Ext2FS.h>
 
 void init_pic();
 int main(mb_partial_info *multiboot_info);
@@ -102,6 +107,9 @@ int main(struct mb_partial_info *mbinfo)
 	current->state = 1;
 	current->regs.cr3 = (u32) pd0;
 
+    //n_proc = 0;
+    //n_proc++;
+
     s.println("Vendor : %s", CPU::getVendor().c_str());
     s.println("Brand : %s", CPU::getBrand().c_str());
 
@@ -118,8 +126,44 @@ int main(struct mb_partial_info *mbinfo)
 
     s.printError("Address : %p", info->PhysBasePtr);
 
+    //struct file *test = FileSystem::getFsList().at(0)->getFile("/boot/task2");
+    char *content = FileSystem::getFsList().at(0)->readFile("/boot/task1");
+
+    s.printError("File content : %c %c %c %c", content[0], content[1], content[2], content[3]);
+
+    Screen::getScreen().printInfo("isElf : %s", isElf(content) ? "True" : "False");
+
+
+    //s.printDebug("Taille fichier : %s, %u", test->name, test->size);
+
+    /*FileSystem *fs = FileSystem::getFsList().at(0);
+
+    s.printError("\tStart LBA : %u", fs->getPartition().s_lba);
+    auto f = fs->getFile("foo.txt");
+    s.printError("\tStart LBA : %u", fs->getPartition().s_lba);
+
+    s.print("\n\n\n\n");
+    char *content = fs->readFile(f);
+    s.printError("\tStart LBA : %u", fs->getPartition().s_lba);
+
+    if(!content)
+        s.printError("FileError");
+
+    s.print("Content of %s, size %d : \n", f->name, f->size);
+    for(int i = 0; i < f->size; ++i)
+        s.print("%c", content[i]);
+    s.print("\n");*/
+
+    load_task("/boot/task1");
+    load_task("/boot/task2");
+    load_task("/boot/task3");
+
     sti;
 
 	for(;;)
+    {
+        //Screen::getScreen().printDebug("Kernel : %d process running", n_proc);
+        //for(int i = 0; i < 10000000; i++);
 		asm("hlt");
+    }
 }
