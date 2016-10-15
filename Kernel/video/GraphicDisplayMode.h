@@ -8,6 +8,8 @@
 #include <memory/mm.h>
 #include <core/io.h>
 
+#include <utils/lib.h>
+
 class GraphicDisplayMode : public Screen
 {
 public:
@@ -21,7 +23,7 @@ public:
             _posY++;
         }
         else if(c == 9) //tab
-            _pixel += 8 * _bitsPerPixel;
+            _posX += 8;
         else if(c == 13) //CR
             _pixel -= _posX * _bitsPerPixel;
         else
@@ -117,6 +119,7 @@ public:
             }
         }
 
+        checkBounds(_buffer, (_buffer + videoEnd - offset));
         memcpy((char*)_buffer, (char*)offset, (_buffer + videoEnd - offset));
         memset((char*)(_buffer + videoEnd - (n * _bytePerLine * 8)), 0, _bytePerLine * 8 * n);
 
@@ -160,6 +163,7 @@ private:
         _maxX = info->XResolution / 8 - 1;
         _maxY = info->YResolution / 8 - 1;
 
+        checkBounds(_buffer, info->YResolution * _bytePerLine);
         memset((char*)_buffer, 0, info->YResolution * _bytePerLine);
     }
 
