@@ -13,6 +13,7 @@ void *__dso_handle = 0; //Attention! Optimally, you should remove the '= 0' part
 void __cxa_pure_virtual()
 {
     Screen::getScreen().printError("Error with pure virtual !");
+    asm("hlt");
 }
 
 int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
@@ -32,7 +33,7 @@ void __stack_chk_fail()
 
     asm("hlt");
 }
- 
+
 void __cxa_finalize(void *f)
 {
 	uarch_t i = __atexit_func_count;

@@ -38,5 +38,5 @@ do_switch:
 	pop edx
 	pop ecx
 	pop eax
-	
+
 	iret

@@ -19,15 +19,15 @@ IdeCtrl::IdeCtrl(u8 bus, u8 device, u8 function)
 
 	checkPorts();
 
-	_drives[0] = IdeDrive(_primaryPorts[0], _primaryPorts[1], Master);
-	_drives[1] = IdeDrive(_primaryPorts[0], _primaryPorts[1], Slave);
+    _drives[0] = new IdeDrive(_primaryPorts[0], _primaryPorts[1], Master);
+    _drives[1] = new IdeDrive(_primaryPorts[0], _primaryPorts[1], Slave);
 
-	_drives[2] = IdeDrive(_secundaryPorts[0], _secundaryPorts[1], Master);
-	_drives[3] = IdeDrive(_secundaryPorts[0], _secundaryPorts[1], Slave);
+    _drives[2] = new IdeDrive(_secundaryPorts[0], _secundaryPorts[1], Master);
+    _drives[3] = new IdeDrive(_secundaryPorts[0], _secundaryPorts[1], Slave);
 
 
 	for(int i = 0; i < 4; ++i)
-		_connetedDevice[i] = _drives[i].isConnected();
+        _connetedDevice[i] = _drives[i]->isConnected();
 }
 
 IdeDrive& IdeCtrl::getDrive(BusRole bus, DriveRole drive)
@@ -36,14 +36,14 @@ IdeDrive& IdeCtrl::getDrive(BusRole bus, DriveRole drive)
 	index *= 2;
 	index += (drive == Slave);
 
-	return _drives[index];
+    return *_drives[index];
 }
 
 void IdeCtrl::displayModelNames()
 {
 	for(int i = 0; i < 4; i++)
 		if(_connetedDevice[i])
-			Screen::getScreen().printk("IDE Device : %s\n", _drives[i].getModelName());
+            Screen::getScreen().printk("IDE Device : %s\n", _drives[i]->getModelName());
 }
 
 void IdeCtrl::displayTree()
@@ -54,16 +54,16 @@ void IdeCtrl::displayTree()
 	s.putcar(0x0A);
 
 	s.putcar(0xC3);
-	s.printk(" Primary master : %s\n", _drives[0].getModelName());
+    s.printk(" Primary master : %s\n", _drives[0]->getModelName());
 
 	s.putcar(0xC3);
-	s.printk(" Primary slave : %s\n", _drives[1].getModelName());
+    s.printk(" Primary slave : %s\n", _drives[1]->getModelName());
 
 	s.putcar(0xC3);
-	s.printk(" Secundary master : %s\n", _drives[2].getModelName());
+    s.printk(" Secundary master : %s\n", _drives[2]->getModelName());
 
 	s.putcar(0xC0);
-	s.printk(" Secundary slave : %s\n", _drives[3].getModelName());
+    s.printk(" Secundary slave : %s\n", _drives[3]->getModelName());
 }
 
 void IdeCtrl::checkPorts()
@@ -102,9 +102,9 @@ IdeDrive::IdeDrive(u16 regPorts, u16 controlPort, enum DriveRole pos)
 	}*/
 }
 
-IdeDrive::IdeDrive(const IdeDrive &o) : IdeDrive(o._regPorts, o._controlPort, o._role)
+IdeDrive::IdeDrive(const IdeDrive &o)
 {
-
+    *this = o;
 }
 
 const IdeDrive& IdeDrive::operator=(const IdeDrive &o)
@@ -123,7 +123,7 @@ const IdeDrive& IdeDrive::operator=(const IdeDrive &o)
 void IdeDrive::displayPartitions()
 {
 	struct Partition p;
-	for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < _part->getPartitionsNumber(); ++i)
 	{
 		p = _part->getPartition(i);
 		u32 size =  p.size * 512 / 1024 / 1024 / 1024;
@@ -138,6 +138,26 @@ void IdeDrive::displayPartitions()
 
 
 		Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
+
+        if(strcmp(isExt2, "Ext2 Part") == 0)
+        {
+            new Ext2FS(p, *this);
+            //struct file *test = FileSystem::getFsList().at(0)->getFile("/boot/kernel");
+
+            auto &s = Screen::getScreen();
+
+            s.printError("---------");
+            s.printError("Size : %u, cap : %u", FileSystem::getFsList().size(), FileSystem::getFsList().capacity());
+            char *content = FileSystem::getFsList().at(0)->readFile("/foo.txt");
+
+            s.print("FILE CONTENT : ");
+
+            for(int i = 0; i < 19; ++i)
+                s.print("%c", content[i]);
+            s.print("\n");
+
+            delete content;
+        }
 
         /*if(strcmp(isExt2, "Ext2 Part") == 0)
 		{
@@ -177,7 +197,8 @@ void IdeDrive::displayPartitions()
             }
         }*/
 
-		kfree(data);
+        if(data)
+            kfree(data);
 	}
 }
 
@@ -363,7 +384,7 @@ void IdeDrive::write(int numblock, int count, const char * const data)
 
 void Partitions::fillPartition(unsigned int i)
 {
-	struct Partition &p = _partitions[i];
+    /*struct Partition &p = _partitions[i];
 
-	_drive->read(0x01BE + (i * 0x10), (char*)(&p), sizeof(struct Partition));
+    _drive->read(0x01BE + (i * 0x10), (char*)(&p), sizeof(struct Partition));*/
 }

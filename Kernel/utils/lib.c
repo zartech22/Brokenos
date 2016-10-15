@@ -1,6 +1,19 @@
 #include "lib.h"
 #include "String.h"
 
+#include "memory/kmalloc.h"
+#include "video/Screen.h"
+
+void checkBounds(void *ptr, unsigned int bytes)
+{
+    struct kmalloc_header *header = (struct kmalloc_header*)((char*)ptr - sizeof(struct kmalloc_header));
+
+    if(bytes > header->size)
+        int x = 3 / 0;
+    else if(!header->used)
+        int x = 3 / 0;
+}
+
 void* memcpy(char *dst, const char *src, unsigned int n)
 {
 	char *p = dst;

@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-m32 -std=c++11 -c -fno-exceptions -ffreestanding -fno-rtti -O2 -I..
+CFLAGS=-m32 -std=c++11 -c -fno-exceptions -nostdlib -ffreestanding -fno-rtti -I..
 
 LD=ld
 LDFLAGS=-m elf_i386 -T build/linker.ld
@@ -25,4 +25,4 @@ compile:
 	$(MAKE) -C video
 
 clean:
-	rm -rf build/*
+	rm -rf build/*.o

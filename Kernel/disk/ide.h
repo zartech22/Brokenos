@@ -4,6 +4,7 @@
 #include <utils/types.h>
 #include <video/Screen.h>
 #include <utils/lib.h>
+#include <utils/Vector.h>
 
 enum DriveRole
 {
@@ -70,7 +71,7 @@ public:
 		strcpy(_modelName, "Uninitialized IDE Device");
 	}
 
-    ~IdeDrive() {}
+    ~IdeDrive() { Screen::getScreen().printError("IDE_DRIVE DELETED !");}
 
 	IdeDrive(u16 regPorts, u16 controlPort, enum DriveRole pos);
 	bool isConnected() const { return _isConnected; }
@@ -107,8 +108,9 @@ class IdeCtrl
 public:
 	IdeCtrl() {}
 	IdeCtrl(u8 bus, u8 device, u8 function);
+    ~IdeCtrl() {}
 
-	IdeDrive& getDrive(BusRole bus, DriveRole drive);
+    IdeDrive &getDrive(BusRole bus, DriveRole drive);
 
 	void displayModelNames();
 	void displayTree();
@@ -120,7 +122,7 @@ private:
 
 	bool _connetedDevice[4];
 
-	IdeDrive _drives[4];
+    IdeDrive* _drives[4];
 
 	void checkPorts();
 };
@@ -128,17 +130,34 @@ private:
 class Partitions
 {
 public:
-	Partitions(IdeDrive *drive) : _drive(drive) { memset((char*)_partitions, 0, 4 * sizeof(struct Partition)); }
+    Partitions(IdeDrive *drive) : _drive(drive) {}
+
+    u8 getPartitionsNumber() const { return _partitions.size(); }
 
 	void fillPartitions()
-	{ for(unsigned int i = 0; i < 4; ++i) fillPartition(i); }
+    {
+        struct Partition p;
 
-	struct Partition getPartition(unsigned int i)
-    { return _partitions[i]; }
+        for(u8 i = 0; i < 4; ++i)
+        {
+            _drive->read(0x01BE + (i * 0x10), (char*)(&p), sizeof(struct Partition));
+
+            if(p.size == 0 || p.s_lba == 0)
+                break;
+
+            struct Partition *part = new struct Partition;
+            *part = p;
+            _partitions.push_back(part);
+        }
+    }
+
+    struct Partition getPartition(unsigned int i)
+    { return *(_partitions[i]); }
 
 private:
 	IdeDrive *_drive;
-	struct Partition _partitions[4];
+    //struct Partition _partitions[4];
+    Vector<struct Partition*, false> _partitions;
 
 	void fillPartition(unsigned int i);
 };

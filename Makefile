@@ -1,6 +1,6 @@
 all:
 	$(MAKE) -C Kernel
-	#$(MAKE) -C user
+	$(MAKE) -C user
 
 clean:
 	$(MAKE) -C Kernel clean

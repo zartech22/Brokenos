@@ -12,6 +12,9 @@ int strcmp(const char*, const char*);
 void itoa(char*, unsigned long int, unsigned int);
 void strcpy(char*, const char*);
 
+void checkBounds(void *ptr, unsigned int bytes);
+
+
 #ifdef __cplusplus
 	}
 #endif
