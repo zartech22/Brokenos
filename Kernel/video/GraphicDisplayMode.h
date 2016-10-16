@@ -23,7 +23,15 @@ public:
             _posY++;
         }
         else if(c == 9) //tab
-            _posX += 8;
+        {
+            if(_posX + 8 > _maxX)
+            {
+                _posY++;
+                _posX = (_posX + 8) % _maxX;
+            }
+            else
+                _posX += 8;
+        }
         else if(c == 13) //CR
             _pixel -= _posX * _bitsPerPixel;
         else
