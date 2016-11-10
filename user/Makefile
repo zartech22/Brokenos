@@ -15,7 +15,6 @@ all: $(basename $(OBJ))
 
 $(basename $(OBJ)): $(OBJ)
 	$(LD) $(LDFLAGS) -o build/$(basename $@) build/$@.o
-	echo $*
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o build/$@ -c $<
