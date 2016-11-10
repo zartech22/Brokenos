@@ -35,5 +35,5 @@ start:
 	push ebx
 	call kmain
 
-	cli;
-	hlt;
+        cli
+        hlt
