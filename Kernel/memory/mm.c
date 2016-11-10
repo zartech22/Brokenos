@@ -36,14 +36,14 @@ struct page* get_page_from_heap()
 	
 	if(p_addr < 0)
 	{
-		Screen::getScreen().printError("get_page_from_heap() : no page frame available. STOP");
+        Screen::getScreen().printError("[%()] : no page frame available. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
 	//Verifie si il y a une page virtuelle libre
 	if(free_vm->vm_end == free_vm->vm_start)
 	{
-		Screen::getScreen().printError("get_page_from_heap() : no more memory in page heap. STOP");
+        Screen::getScreen().printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
@@ -72,6 +72,58 @@ struct page* get_page_from_heap()
 	pg->p_addr = p_addr;
 	
 	return pg;
+}
+
+struct page* get_page_from_heap(char *p_addr, char *end)
+{
+    struct page *pg;
+    struct vm_area *p;
+    char *v_addr;
+    char * begin_p_addr = p_addr;
+    char *begin_v_addr;
+
+    do
+    {
+        //Prend page phys libre
+        set_page_frame_used(PAGE(p_addr));
+
+        //Verifie si il y a une page virtuelle libre
+        if(free_vm->vm_end == free_vm->vm_start)
+        {
+            //Screen::getScreen().printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
+            asm("hlt");
+        }
+
+        //Prend une page virtuelle libre
+        v_addr = free_vm->vm_start;
+
+        if(free_vm->vm_end - free_vm->vm_start == PAGESIZE)
+        {
+            if(free_vm->next)
+            {
+                p = free_vm;
+                free_vm = free_vm->next;
+                free_vm->prev = 0;
+                kfree(p);
+            }
+        }
+        else
+            free_vm->vm_start += PAGESIZE;
+
+        //Maj de l'espace d'adressage noyau
+        pd0_add_page(v_addr, p_addr, 0);
+
+        if(p_addr == begin_p_addr)
+            begin_v_addr = v_addr;
+
+    }while((p_addr += PAGESIZE) < end);
+
+
+    pg = new struct page;
+    pg->p_addr = begin_p_addr;
+    pg->v_addr = begin_v_addr;
+
+    return pg;
 }
 
 int release_page_from_heap(char *v_addr)
@@ -131,7 +183,7 @@ int release_page_from_heap(char *v_addr)
 	}
 	else
 	{
-		Screen::getScreen().printError("release_page_from_heap() : corrupted linked list. STOP");
+        Screen::getScreen().printError("[%s()] : corrupted linked list. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
@@ -186,16 +238,6 @@ void init_mm(u32 high_mem)
 	free_vm->prev = 0;
 	
 	return;
-}
-
-void init_graphicMode_video_memory(char *p_addr, char *end)
-{
-    for(char *v_addr = (char*)GRAPHIC_MODE_VIDEO; v_addr < end; v_addr += PAGESIZE, p_addr += PAGESIZE)
-    {
-        set_page_frame_used(PAGE(p_addr));
-
-        pd0_add_page(v_addr, p_addr, 0);
-    }
 }
 
 //creer un rep de page pour une tache

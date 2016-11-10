@@ -1,3 +1,5 @@
+#pragma once
+
 #include <utils/types.h>
 
 #define PAGESIZE	4096
@@ -29,8 +31,6 @@
 #define VADDR_PT_OFFSET(addr)	((addr) & 0x003FF000) >> 12
 #define VADDR_PG_OFFSET(addr)	(addr) & 0x00000FFF
 #define PAGE(addr)				(addr) >> 12
-
-#define GRAPHIC_MODE_VIDEO      0x1100000
 
 #define PAGING_FLAG	0x80000000
 #define PSE_FLAG	0x00000010
@@ -94,22 +94,16 @@ extern u8 mem_bitmap[];
 #define set_page_frame_used(page)	mem_bitmap[((u32) page) / 8] |= (1 << (((u32) page) % 8))
 #define release_page_frame(p_addr)	mem_bitmap[((u32) p_addr / PAGESIZE) / 8] &= ~(1 << (((u32) p_addr / PAGESIZE) % 8))
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
 //select une page vide ds le bitmap
 char *get_page_frame();
 
 //selectionne / libere page libre dans le bitmap et l'associe a page virtuelle libre du heap
 struct page* get_page_from_heap();
+struct page* get_page_from_heap(char* p_addr, char* end_p_addr = 0);
 int release_page_from_heap(char *);
 
 //init les struct de donnees de gestion de la memoire
 void init_mm(u32);
-
-// Fait le mapping Virtual GraphicMode Video <-> Phys GraphicModeVideo
-void init_graphicMode_video_memory(char *p_addr, char *end);
 
 //creer un rep de page pour une tache
 struct page_directory* pd_create();
@@ -124,7 +118,3 @@ int pd_remove_page(char*);
 
 //Retourne adresse physique associe a une adresse virtuelle
 char* get_p_addr(char*);
-
-#ifdef __cplusplus
-}
-#endif
