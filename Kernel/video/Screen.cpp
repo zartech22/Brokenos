@@ -13,6 +13,9 @@
 #define SIZESCREEN          0xFA0
 #define SCREENLIM           0xB8FA0
 
+#define VBE_INFO            0x00000800
+#define FRAMEBUFFER_INFO    0x00001000
+
 #define GRAPHIC_MODE_ATTR   0x10
 
 Screen* Screen::_inst = 0;
@@ -22,18 +25,44 @@ Screen& Screen::getScreen()
     return *Screen::_inst;
 }
 
-void Screen::initScreen(VbeModeInfo *info)
+void Screen::initScreen(mb_partial_info *info)
 {
-    if(info->ModeAttributes & GRAPHIC_MODE_ATTR)
+
+    if(info->flags & VBE_INFO)
     {
-        char *end = (char*)GRAPHIC_MODE_VIDEO + info->YResolution * info->BytesPerScanLine;
+        VbeModeInfo *vbeInfo = (struct VbeModeInfo*)info->vbe_mode_info;
 
-        init_graphicMode_video_memory((char*)info->PhysBasePtr, end);
+        if(vbeInfo->ModeAttributes & GRAPHIC_MODE_ATTR)
+        {
+            char *end = (char*)vbeInfo->PhysBasePtr + vbeInfo->YResolution * vbeInfo->BytesPerScanLine;
 
-        Screen::_inst = new GraphicDisplayMode(info);
+            //init_graphicMode_video_memory((char*)info->PhysBasePtr, end);
+
+            struct page *framebuffer = get_page_from_heap((char*)vbeInfo->PhysBasePtr, end);
+
+            Screen::_inst = new GraphicDisplayMode(vbeInfo, framebuffer->v_addr);
+
+            //_inst->printError("Graphic virtual memory starts : %p - ends %p, page : %d", framebuffer->v_addr, framebuffer->v_addr + info->YResolution * info->BytesPerScanLine, (info->YResolution * info->BytesPerScanLine) / PAGESIZE);
+
+            delete framebuffer;
+        }
+        else
+            Screen::_inst = new TextDisplayMode(vbeInfo);
     }
-    else
-        Screen::_inst = new TextDisplayMode(info);
+    else if(info->flags & FRAMEBUFFER_INFO)
+    {
+        if(!(info->framebuffer_addr >> 32))
+        {
+            char *begin = (char*)(info->framebuffer_addr & 0xFFFFFFFF);
+            char *end = (char*)(begin + info->framebuffer_height * info->framebuffer_pitch);
+
+            struct page *framebuffer = get_page_from_heap(begin, end);
+
+            Screen::_inst = new GraphicDisplayMode(framebuffer->v_addr, info->framebuffer_width, info->framebuffer_height, info->framebuffer_bpp, info->framebuffer_pitch);
+
+            delete framebuffer;
+        }
+    }
 }
 
 void Screen::print(const char *string, ...)

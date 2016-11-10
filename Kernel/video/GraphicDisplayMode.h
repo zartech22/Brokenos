@@ -165,7 +165,7 @@ private:
     friend class Screen;
     friend int main(struct mb_partial_info*);
 
-    GraphicDisplayMode(VbeModeInfo *info) : Screen(), _frameBuffer((uchar*)GRAPHIC_MODE_VIDEO), _pixel(_frameBuffer), _bytePerLine(info->BytesPerScanLine),
+    GraphicDisplayMode(VbeModeInfo *info, char *framebuffer) : Screen(), _frameBuffer((uchar*)framebuffer), _pixel(_frameBuffer), _bytePerLine(info->BytesPerScanLine),
         _bitsPerPixel(info->BitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[info->YResolution * info->BytesPerScanLine])
     {
         _maxX = info->XResolution / 8 - 1;
@@ -175,10 +175,20 @@ private:
         memset((char*)_buffer, 0, info->YResolution * _bytePerLine);
     }
 
+    GraphicDisplayMode(char *framebuffer, u32 width, u32 height, u8 bitsPerPixel, u32 bytePerScanline) : _frameBuffer((uchar*)framebuffer), _bytePerLine(bytePerScanline),
+        _bitsPerPixel(bitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[height * bytePerScanline])
+    {
+        _maxX = width / 8 - 1;
+        _maxY = height / 8 - 1;
+
+        checkBounds(_buffer, height * _bytePerLine);
+        memset((char*)_buffer, 0, height* _bytePerLine);
+    }
+
     uchar * const _buffer;
     uchar * const _frameBuffer;
     uchar* _pixel;
-    u16 _bytePerLine;
+    u32 _bytePerLine;
     u8  _bitsPerPixel;
     u8  _pixelWidth;
 };

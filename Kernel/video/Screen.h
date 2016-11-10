@@ -71,7 +71,7 @@ private :
 
     Screen(VbeModeInfo *info) : _posX(0), _posY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
 
-    static void initScreen(VbeModeInfo*);
+    static void initScreen(mb_partial_info*);
     static Screen *_inst;
 				
     u8 _colors;
