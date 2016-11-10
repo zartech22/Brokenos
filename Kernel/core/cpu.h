@@ -10,7 +10,7 @@ public:
     {
         u32 *vendor = (u32*)kmalloc(13);
 
-        asm volatile("xor %%eax, %%eax;"
+        asm ("xor %%eax, %%eax;"
                     "cpuid;"
                     : "=b" (*vendor), "=c" (*(vendor + 2)), "=d" (*(vendor + 1)) :: "%eax");
 
@@ -27,9 +27,9 @@ public:
     {
         u32 *brand = (u32*)kmalloc(49);
 
-        asm volatile("cpuid;" : "=a" (*brand), "=b" (*(brand + 1)), "=c" (*(brand + 2)), "=d" (*(brand + 3)) : "a" (0x80000002));
-        asm volatile("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));
-        asm volatile("cpuid;" : "=a" (*(brand + 8)), "=b" (*(brand + 9)), "=c" (*(brand + 10)), "=d" (*(brand + 11)) : "a" (0x80000004));
+        asm ("cpuid;" : "=a" (*brand), "=b" (*(brand + 1)), "=c" (*(brand + 2)), "=d" (*(brand + 3)) : "a" (0x80000002));
+        asm ("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));
+        asm ("cpuid;" : "=a" (*(brand + 8)), "=b" (*(brand + 9)), "=c" (*(brand + 10)), "=d" (*(brand + 11)) : "a" (0x80000004));
 
         brand[48] = '\0';
 
