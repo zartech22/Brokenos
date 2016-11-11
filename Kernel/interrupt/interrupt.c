@@ -4,6 +4,7 @@
 #include <core/io.h>
 #include <memory/gdt.h>
 #include <interrupt/scheduler.h>
+#define _TIME_
 #include <interrupt/interrupt.h>
 #include <core/process.h>
 #include <memory/kmalloc.h>
@@ -12,7 +13,7 @@
 
 void isr_default_int()
 {
-	//print("An interrupt has been catch !\n");
+    //Screen::getScreen().print("An interrupt has been catch !\n");
 }
 
 void isr_default_exc()
@@ -24,6 +25,8 @@ void isr_clock_int()
 {
 	static int tic = 0;
 	static int sec = 0;
+
+    msTime += 20;
 	
 	tic++;
 	
@@ -40,13 +43,17 @@ void isr_clock_int()
     schedule();
 }
 
-void isr_GP_exc(u32 error)
+void isr_GP_exc()
 {
     u32 fault_addr;
+    u32 error;
     char *opcode = (char*)fault_addr;
 
-    //asm("movl 60(%%ebp), %%eax;"
-      //  "mov %%eax, %0;" : "=m"(fault_addr):);
+    asm("movl 44(%%esp), %%eax;"
+        "movl %%eax, %0" : "=m"(error) :);
+
+    /*asm("movl 60(%%ebp), %%eax;"
+        "mov %%eax, %0;" : "=m"(fault_addr):);*/
 
     //Screen::getScreen().setPos(0, 0);
     //Screen::getScreen().clean();
@@ -76,6 +83,7 @@ void isr_GP_exc(u32 error)
         }
 
         Screen::getScreen().printError("Selector : %x", (error >> 3) & 0x1FFF);
+        Screen::getScreen().printError("Error : %b", error);
     }
     else
         Screen::getScreen().printError("Unknown error");
@@ -83,16 +91,18 @@ void isr_GP_exc(u32 error)
 	asm("hlt");
 }
 
-void isr_PF_exc(u32 error)
+void isr_PF_exc()
 {
 	u32 faulting_addr;
 	u32 eip;
-    char *addr = (char*)faulting_addr;
+    u32 error;
 	
 	asm("	movl 60(%%ebp), %%eax;	\
 			mov %%eax, %0;			\
 			mov %%cr2, %%eax;		\
-			mov %%eax, %1": "=m"(eip), "=m"(faulting_addr): );
+            mov %%eax, %1;          \
+            movl 44(%%esp), %%eax;  \
+            movl %%eax, %2;": "=m"(eip), "=m"(faulting_addr), "=m"(error): );
 
     //Screen::getScreen().setPos(0, 0);
     //Screen::getScreen().clean();
@@ -227,5 +237,4 @@ void do_syscall(int sys_num)
     }
 	else
 		Screen::getScreen().printError("Unknown syscall !");
-	return;
 }
