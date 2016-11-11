@@ -6,6 +6,7 @@
 typedef unsigned char   u8;
 typedef unsigned short  u16;
 typedef unsigned int    u32;
+typedef unsigned long long   u64;
 typedef unsigned char   uchar;
 
 struct mb_partial_info
@@ -41,6 +42,32 @@ struct mb_partial_info
     u16 vbe_interface_seg;
     u16 vbe_interface_off;
     u16 vbe_interface_len;
+
+    u64 framebuffer_addr;
+    u32 framebuffer_pitch;
+    u32 framebuffer_width;
+    u32 framebuffer_height;
+    u8  framebuffer_bpp;
+    u8  framebuffer_type;
+
+    union
+    {
+        struct
+        {
+            u32 framebuffer_pallette_addr;
+            u16 framebuffer_palette_num_colors;
+        };
+
+        struct
+        {
+            u8 framebuffer_red_field_position;
+            u8 framebuffer_red_mask_size;
+            u8 framebuffer_green_field_position;
+            u8 framebuffer_green_mask_size;
+            u8 framebuffer_blue_field_position;
+            u8 framebuffer_blue_mask_size;
+        };
+    };
 };
 
 struct VbeModeInfo
