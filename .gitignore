@@ -1,6 +1,11 @@
 Kernel/build/*.o
+Kernel/build/**/*.o
 kernel
 user/build/*
 os.*
 *.*~
 *~
+.idea/
+.qmake.stash
+CMakeLists.txt
+cmake-build-debug/
