@@ -8,9 +8,10 @@
 #include <utils/lib.h>
 #include <memory/kmalloc.h>
 #include <pci/pci.h>
-#include <disk/ide.h>
+#include <disk/IDE/IdeCtrl.h>
+#include <disk/IDE/IdeDrive.h>
 #include <utils/elf.h>
-#include <disk/FileSystem.h>
+#include <disk/FileSystems/FileSystem.h>
 
 #include <utils/String.h>
 #include <utils/Vector.h>
@@ -19,7 +20,8 @@
 
 
 
-#include <disk/Ext2FS.h>
+
+#include <disk/FileSystems/Ext2/Ext2FS.h>
 
 void init_pic();
 int main(mb_partial_info *multiboot_info);

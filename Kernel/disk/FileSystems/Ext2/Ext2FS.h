@@ -1,9 +1,8 @@
 #ifndef EXT2FS_H
 #define EXT2FS_H
 
-#include <disk/ide.h>
 #include <utils/types.h>
-#include <disk/FileSystem.h>
+#include <disk/FileSystems/FileSystem.h>
 
 /* ERROR TYPES */
 #define	EXT2_ERRORS_CONTINUE	1

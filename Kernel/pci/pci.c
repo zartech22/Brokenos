@@ -6,7 +6,7 @@
 #include <video/Screen.h>
 #include <memory/kmalloc.h>
 #include <pci/pciIds.h>
-#include <disk/ide.h>
+#include <disk/IDE/IdeCtrl.h>
 
 
 u32 pciConfigReadDWord(u8 bus, u8 slot, u8 function, u8 offset)

@@ -4,7 +4,7 @@
 #include <core/io.h>
 #include <memory/kmalloc.h>
 #include <utils/types.h>
-#include <disk/FileSystem.h>
+#include <disk/FileSystems/FileSystem.h>
 #include <utils/elf.h>
 
 #define __PLIST__

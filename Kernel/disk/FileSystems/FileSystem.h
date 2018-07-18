@@ -3,7 +3,7 @@
 
 #include <memory/kmalloc.h>
 #include <utils/types.h>
-#include <disk/ide.h>
+#include <disk/IDE/IdeDrive.h>
 #include <utils/lib.h>
 #include <utils/Vector.h>
 

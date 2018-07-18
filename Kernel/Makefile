@@ -4,7 +4,7 @@ CFLAGS=-m32 -std=c++11 -g -c -fno-exceptions -nostdlib -ffreestanding -fno-rtti 
 LD=ld
 LDFLAGS=-m elf_i386 -T build/linker.ld
 
-OBJECTS= $(wildcard build/*.o)
+OBJECTS= $(shell find build/ -type f -name "*.o")
 
 export CC
 export CFLAGS

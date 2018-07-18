@@ -1,4 +1,4 @@
-#include <disk/Ext2FS.h>
+#include <disk/FileSystems/Ext2/Ext2FS.h>
 #include <utils/lib.h>
 #include <memory/kmalloc.h>
 #include <video/Screen.h>
