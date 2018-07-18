@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mm.h"
 
 //desc de segment

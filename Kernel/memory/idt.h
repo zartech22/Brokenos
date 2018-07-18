@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mm.h"
 
 #define INTGATE 0x8E00
