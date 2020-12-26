@@ -35,6 +35,8 @@ const IdeDrive& IdeDrive::operator=(const IdeDrive &o)
     strcpy(_modelName, o._modelName);
 
     _part = o._part;
+
+    return *this;
 }
 
 void IdeDrive::displayPartitions()
