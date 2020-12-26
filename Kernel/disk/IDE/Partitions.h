@@ -12,7 +12,7 @@ class IdeDrive;
 class Partitions
 {
 public:
-    Partitions(IdeDrive *drive) : _drive(drive) {}
+    explicit Partitions(IdeDrive *drive) : _drive(drive) {}
 
     u8 getPartitionsNumber() const { return _partitions.size(); }
 
@@ -30,6 +30,7 @@ public:
             struct Partition *part = new struct Partition;
             *part = p;
             _partitions.push_back(part);
+            checkFilesystem(*part);
         }
     }
 
@@ -41,7 +42,7 @@ private:
     //struct Partition _partitions[4];
     Vector<struct Partition*, false> _partitions;
 
-    void fillPartition(unsigned int i);
+    void checkFilesystem(struct Partition &partition);
 };
 
 #endif // PARTITIONS_H

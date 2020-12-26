@@ -263,10 +263,7 @@ void checkFunction(u8 bus, u8 device, u8 function)
 
     // TODO: gérer le cas où il y a plusieurs contrôleur IDE
 	if(classCode == MassStorageCtrl && subClass == 0x01)
-	{
-		ctrl = IdeCtrl(bus, device, function);
-		ctrl.displayTree();
-	}
+	    IdeCtrl::addController(bus, device, function);
 }
 
 void checkDevice(u8 bus, u8 device)

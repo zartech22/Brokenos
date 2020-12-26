@@ -55,69 +55,7 @@ void IdeDrive::displayPartitions()
 
         const char* isExt2 = (Ext2FS::isExt2FS(data) && p.size != 0) ? "Ext2 Part" : "Unk Part";
 
-
         Screen::getScreen().printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
-
-        if(strcmp(isExt2, "Ext2 Part") == 0)
-        {
-            new Ext2FS(p, *this);
-            //struct file *test = FileSystem::getFsList().at(0)->getFile("/boot/kernel");
-
-            auto &s = Screen::getScreen();
-
-            s.printError("---------");
-            s.printError("Size : %u, cap : %u", FileSystem::getFsList().size(), FileSystem::getFsList().capacity());
-            char *content = FileSystem::getFsList().at(0)->readFile("/foo.txt");
-
-            s.print("FILE CONTENT : ");
-
-            for(int i = 0; i < 19; ++i)
-                s.print("%c", content[i]);
-            s.print("\n");
-
-            delete content;
-        }
-
-        /*if(strcmp(isExt2, "Ext2 Part") == 0)
-        {
-            Ext2FS fs(p, *this);
-
-            struct file * f = fs.getDirEntries("/senchaProject");
-            struct file *tmp = f;
-
-            bool cont = true;
-
-            while(cont)
-            {
-                if(tmp)
-                {
-                    if(fs.isDirectory(tmp))
-                        Screen::getScreen().printDebug("Dir %s", tmp->name);
-                    else
-                        Screen::getScreen().printDebug("File %s", tmp->name);
-
-                    if(String(tmp->name) == String("taMere.txt"))
-                    {
-                        Screen::getScreen().print("Data %s : ", tmp->name);
-                        struct file *file = fs.getFile(tmp->name);
-                        char *c = fs.readFile(file);
-
-                        for(int i = 0; i < file->size; ++i, ++c)
-                            Screen::getScreen().print("%c", *c);
-
-                        Screen::getScreen().print("\n");
-                    }
-
-                    if(tmp->next == f || !tmp->next)
-                        cont = false;
-                    else
-                        tmp = tmp->next;
-                }
-            }
-        }*/
-
-        if(data)
-            kfree(data);
     }
 }
 

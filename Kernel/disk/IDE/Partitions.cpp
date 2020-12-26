@@ -1,8 +1,12 @@
 #include <disk/IDE/Partitions.h>
+#include <disk/FileSystems/Ext2/Ext2FS.h>
 
-void Partitions::fillPartition(unsigned int i)
+void Partitions::checkFilesystem(struct Partition &partition)
 {
-    /*struct Partition &p = _partitions[i];
+    char *data = _drive->read(partition.s_lba + 2, 2);
 
-    _drive->read(0x01BE + (i * 0x10), (char*)(&p), sizeof(struct Partition));*/
+    bool isExt2 = (partition.size != 0 && Ext2FS::isExt2FS(data));
+
+    if(isExt2)
+        Ext2FS::initializeFS(partition, *_drive);
 }

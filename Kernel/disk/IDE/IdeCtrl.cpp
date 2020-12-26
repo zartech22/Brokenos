@@ -4,6 +4,8 @@
 
 #include <disk/IDE/IdeDrive.h>
 
+Vector<IdeCtrl*> *IdeCtrl::IdeList = nullptr;
+
 IdeCtrl::IdeCtrl(u8 bus, u8 device, u8 function)
     : _bus(bus), _device(device), _function(function)
 {

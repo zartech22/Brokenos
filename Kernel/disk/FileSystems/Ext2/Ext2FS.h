@@ -175,6 +175,11 @@ class Ext2FS : public FileSystem
 
         static bool isExt2FS(char *data);
 
+        static Ext2FS* initializeFS(struct Partition &part, IdeDrive &drive)
+        {
+            return new Ext2FS(part, drive);
+        }
+
     private:
 		u32 _blockSize;
 		u16	_groupNumber;
