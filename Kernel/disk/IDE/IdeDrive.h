@@ -11,7 +11,7 @@ class Partitions;
 class IdeDrive
 {
 public:
-    IdeDrive() : _regPorts(0), _controlPort(0), _part(0)
+    IdeDrive() : _regPorts(0), _controlPort(0), _part(nullptr), _isConnected(false), _role(Master), _modelName{}
     {
         memset(_modelName, '\0', 41);
         strcpy(_modelName, "Uninitialized IDE Device");

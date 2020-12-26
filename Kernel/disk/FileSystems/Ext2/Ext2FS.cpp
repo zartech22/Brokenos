@@ -5,8 +5,6 @@
 
 bool Ext2FS::isExt2FS(char *data)
 {
-	struct ext2_super_block *sb = (struct ext2_super_block*)data;
-
 	if(!data)
 	{
         Screen::getScreen().printError("Data NULL !");
@@ -47,12 +45,12 @@ void Ext2FS::initFsRoot()
     data->inum = EXT2_INUM_ROOT;
     data->inode = readInode(EXT2_INUM_ROOT);
 
-    rootFile->content = 0;
+    rootFile->content = nullptr;
     rootFile->privateData = (void*)data;
     rootFile->parent = rootFile;
     rootFile->leaf = getDirEntries(rootFile);
-    rootFile->next = 0;
-    rootFile->prev = 0;
+    rootFile->next = nullptr;
+    rootFile->prev = nullptr;
 }
 
 void Ext2FS::readSuperBlock()
@@ -102,7 +100,7 @@ char* Ext2FS::readFile(const char *path)
         return readFile(f);
 	}
 	else
-		return 0;
+		return nullptr;
 }
 
 char* Ext2FS::readFile(struct file *file)
@@ -116,7 +114,7 @@ char* Ext2FS::readFile(struct file *file)
     struct filePrivateData *data = (struct filePrivateData*)file->privateData;
 
     if(!data)
-        return 0;
+        return nullptr;
 
     struct ext2_inode *inode = data->inode;
 
@@ -261,7 +259,7 @@ struct file* Ext2FS::isCachedLeaf(struct file *dir, char *filename)
 		leaf = leaf->next;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 struct file* Ext2FS::getDirEntries(struct file *dir)
@@ -285,7 +283,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 	if(!isDirectory(dir))
 	{
         Screen::getScreen().printError("%s isn't a directory !", dir->name);
-		return 0;
+		return nullptr;
 	}
 
     if(!dir->content)
@@ -307,7 +305,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
         memcpy(filename, &(dentry->name), dentry->name_len);
         filename[dentry->name_len] = 0;
 
-		if(strcmp(".", filename) && strcmp("..", filename))
+		if(strcmp(".", filename) != 0 && strcmp("..", filename) != 0)
 		{
 			if(!(leaf = isCachedLeaf(dir, filename)))
 			{
@@ -324,9 +322,9 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
                 privData->inode = readInode(dentry->inode);
 
                 leaf->size = privData->inode->size;
-                leaf->content = 0;
+                leaf->content = nullptr;
 				leaf->parent = dir;
-				leaf->leaf = 0;
+				leaf->leaf = nullptr;
                 leaf->privateData = privData;
 
 				if(prevLeaf)
@@ -341,8 +339,8 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 				}
 				else
 				{
-					leaf->next = 0;
-					leaf->prev = 0;
+					leaf->next = nullptr;
+					leaf->prev = nullptr;
 					firstLeaf = leaf;
 				}
 			}
@@ -362,7 +360,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 	if(fileToClose)
 	{
         kfree(dir->content);
-        dir->content = 0;
+        dir->content = nullptr;
 	}
 
 	return firstLeaf;
@@ -419,7 +417,7 @@ struct file* Ext2FS::getFile(const char *filename)
 			if(!(file = isCachedLeaf(file, name)))
             {
                 kfree(name);
-				return 0;
+				return nullptr;
             }
 		}
 

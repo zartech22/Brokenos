@@ -34,7 +34,7 @@ class Screen
 public :
 	static Screen& getScreen();
 	
-    virtual ~Screen() {}
+    virtual ~Screen() = default;
 
     virtual void putcar(uchar) = 0;
     virtual void clean() {}

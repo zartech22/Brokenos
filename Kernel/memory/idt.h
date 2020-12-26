@@ -28,13 +28,5 @@ struct idtr
 	extern struct idtdesc kidt[];
 #endif
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
 void init_idt_desc(u16, u32, u16, struct idtdesc *desc);
 void init_idt();
-
-#ifdef __cplusplus
-	}
-#endif

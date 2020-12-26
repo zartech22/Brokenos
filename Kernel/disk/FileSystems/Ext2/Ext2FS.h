@@ -156,9 +156,9 @@ class Ext2FS : public FileSystem
 {
     public:
         Ext2FS(struct Partition&, IdeDrive&);
-        ~Ext2FS() { Screen::getScreen().printError("Fin Ext2FS"); }
+        ~Ext2FS() override { Screen::getScreen().printError("Fin Ext2FS"); }
 
-        Ext2FS(const Ext2FS &o) : FileSystem(*this) { Screen::getScreen().printError("Copie"); }
+        explicit Ext2FS(const Ext2FS &o) : FileSystem(*this) { Screen::getScreen().printError("Copie"); }
 
         virtual char* readFile(const char *path) override;
         virtual char* readFile(struct file*) override;

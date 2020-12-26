@@ -135,7 +135,7 @@ void IdeDrive::initDevice()
     u8 device = (_role == Master) ? 0xA0 : 0xB0;
     outb(_regPorts + ATA_DRIVE, device); // Select the device
 
-    for(u16 i = ATA_SECT_COUNT; i <= ATA_LBA_HIGH; i++) // Send 0 to port 2-5
+    for(u16 i = 2; i <= 5; i++) // Send 0 to port 2-5
         outb(_regPorts + i, 0);
 
 

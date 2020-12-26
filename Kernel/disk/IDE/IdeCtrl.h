@@ -11,7 +11,7 @@ class IdeCtrl
 public:
     IdeCtrl() : _bus(0xFF), _device(0xFF), _function(0xFF) {}
     IdeCtrl(u8 bus, u8 device, u8 function);
-    ~IdeCtrl() {}
+    ~IdeCtrl() = default;
 
     IdeDrive &getDrive(BusRole bus, DriveRole drive);
 

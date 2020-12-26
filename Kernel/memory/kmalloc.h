@@ -19,15 +19,9 @@ void* operator new[](size_t size);
 void operator delete(void *mem);
 void operator delete[](void *meme);
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
 void* ksbrk(unsigned int);
 void* kmalloc(unsigned long);
 void* krealloc(void*, unsigned long);
 void kfree(const void*);
-#ifdef __cplusplus
-}
-#endif
 
 #endif

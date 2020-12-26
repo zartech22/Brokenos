@@ -69,7 +69,7 @@ inline u16 pciCheckVendor(u8 bus, u8 slot)
 
 const char* pciGetVendorName(u16 vendor)
 {
-	char *name = (char*) kmalloc(10 * sizeof(char));
+	char *name = new char[10];
 	memset(name, '\0', 10);
 	
 	switch(vendor)
@@ -111,7 +111,7 @@ const char* pciGetVendorName(u16 vendor)
 
 const char* pciGetClassCodeName(u8 code)
 {
-	char *name = (char*) kmalloc(35 * sizeof(char));
+    char *name = new char[35];
 	memset(name, '\0', 35);
 	
 	switch(code)
@@ -183,35 +183,8 @@ void displayDevice(u16 vendor, u8 classCode, u8 subClassCode, u16 devId)
 	Screen::getScreen().printk("\t%s, Class : %s, SubClass : %x, DevId : %x\n", vendorName,
 				className, subClassCode, devId);
 	
-	kfree(vendorName);
-	kfree(className);
-}
-
-void displayIDECtrl(u8 bus, u8 device, u8 function)
-{
-	u32 bars[4];
-	
-    for(u8 i = 0; i < 4; i++)
-		bars[i] = pciConfigReadDWord(bus, device, function, 0x10 + 4 * i);
-	
-	bars[0] = pciConfigReadDWord(bus, device, function, 0x10);
-	
-	Screen::getScreen().printk("IDE Bar : %x\n%x\n%x\n%x\n", bars[0], bars[1], bars[2], bars[3]);
-	Screen::getScreen().printk("IDE Mode : ");
-	
-	u8 progIf = pciConfigReadByte(bus, device, function, 0x09);
-	
-	if(!(progIf & 0x1))
-		Screen::getScreen().printk("Compatibility Mode\n");
-	else
-		Screen::getScreen().printk("Native Mode\n");
-	
-	Screen::getScreen().printk("Support both Mode : ");
-	
-	if(progIf & 0x2)
-		Screen::getScreen().printk("True\n");
-	else
-		Screen::getScreen().printk("False\n");
+	delete[] vendorName;
+	delete[] className;
 }
 
 void checkFunction(u8 bus, u8 device, u8 function)

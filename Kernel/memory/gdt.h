@@ -42,14 +42,8 @@ struct tss
 	u16 debug_flag, io_map;
 } __attribute__ ((packed));
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
 void init_gdt_desc(u32, u32, u8, u8, struct gdtdesc*);
 void init_gdt();
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __GDT__
 	struct gdtdesc kgdt[GDTSIZE];

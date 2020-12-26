@@ -28,7 +28,7 @@ IdeCtrl::IdeCtrl(u8 bus, u8 device, u8 function)
 
 IdeDrive& IdeCtrl::getDrive(BusRole bus, DriveRole drive)
 {
-    unsigned int index = (bus == SecundaryBus); // 0 if primary, else 1
+    unsigned int index = (bus == SecundaryBus) ? 1 : 0; // 0 if primary, else 1
     index *= 2;
     index += (drive == Slave);
 
