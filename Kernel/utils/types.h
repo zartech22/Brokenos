@@ -107,4 +107,14 @@ struct VbeModeInfo
     unsigned char   Reserved[206];
 } __attribute__((packed));
 
+struct mmapInfo
+{
+    u32 size;
+    u32 addr_low;
+    u32 addr_high;
+    u32 length_low;
+    u32 length_high;
+    u8  type;
+} __attribute__((packed)) ;
+
 #endif
