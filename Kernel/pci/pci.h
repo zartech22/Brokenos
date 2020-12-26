@@ -14,9 +14,3 @@ u16 pciGetVendor(u8 bus, u8 slot);
 void pciGetVendors();
 
 void checkBus(u8);
-
-#ifdef __PCI__
-    IdeCtrl ctrl;
-#else
-	extern IdeCtrl ctrl;
-#endif
