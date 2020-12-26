@@ -1,7 +1,13 @@
-SRC= $(wildcard *.c)
-OBJ= $(SRC:.c=.o)
+CSRC= $(wildcard *.c)
+COBJ= $(CSRC:.c=.o)
 
-all: $(OBJ)
+CPPSRC= $(wildcard *.cpp)
+CPPOBJ= $(CPPSRC:.cpp=.o)
+
+all: $(COBJ) $(CPPOBJ)
 
 %.o: %.c
+	$(CC) $(CFLAGS) -o ../build/$@ $^
+
+%.o: %.cpp
 	$(CC) $(CFLAGS) -o ../build/$@ $^
