@@ -9,3 +9,4 @@ os.*
 .qmake.stash
 CMakeLists.txt
 cmake-build-debug/
+tests/
