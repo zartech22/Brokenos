@@ -13,7 +13,7 @@ struct process
 	
 	struct
 	{
-		u32 eax, ebx, ecx, edx;
+        u32 eax, ecx, edx, ebx;
 		u32 esp, ebp, esi, edi;
 		u32 eip, eflags;
 		u32 cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
@@ -30,11 +30,27 @@ struct process
 	struct page_directory *pd;
 	
 	//Pages frame utilisées par l'exe
-	struct page_list *pglist;
-	
+    struct page_list *pglist;
+
 	int state; // 0 not used, 1 ready/running, 2 sleep
 	
 } __attribute__ ((packed));
+
+struct thread
+{
+    struct
+    {
+        u32 eax, ebx, ecx, edx;
+        u32 esp, ebp, esi, edi;
+        u32 eip, eflags;
+        u32 cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
+        u32 cr3;
+    } regs __attribute__ ((packed));
+
+    char *function;
+
+    int state;
+};
 
 #ifdef __PLIST__
 	struct process p_list[MAXPID + 1];
@@ -49,4 +65,6 @@ struct process
 
 int load_task(char*, u32);
 int load_task(const char *filename);
+
+void createThread(void *fn);
 

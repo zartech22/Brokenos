@@ -122,6 +122,12 @@ int load_task(char *fn, u32 code_size)
 
 int load_task(const char *filename)
 {
+    if(!(&FileSystem::getFsList()) || FileSystem::getFsList().empty())
+    {
+        sScreen.printError("Error loading file \"%s\". No filesystem available", filename);
+        return 0;
+    }
+
     struct page_directory *pd;
     struct page_list *pglist;
     struct page *kstack;
@@ -157,7 +163,7 @@ int load_task(const char *filename)
 
     e_entry = (u32) loadElf(file, pd, pglist);
 
-    kfree(file);
+    delete file;
 
     if(e_entry == 0)
     {
@@ -212,4 +218,140 @@ int load_task(const char *filename)
             "mov %%eax, %%cr3":: "m"(current->regs.cr3));
 
         return pid;
+}
+
+void test(u32 test)
+{
+    //Screen::getScreen().printDebug("Salut !");
+    //Screen::getScreen().printError("Test ! %p", function);
+    //function();
+
+    asm("nop;"
+        "nop;");
+
+    volatile register int a = test;
+
+
+    asm("nop;"
+        "nop;");
+
+    int d = 5;
+
+    Screen::getScreen().printDebug("Test = %x. Youpie !", test);
+
+    for(;;)
+        asm("hlt");
+}
+
+void createThread(void *fn)
+{
+//    struct page_directory *pd;
+//    struct page_list *pglist;
+//    struct page *kstack;
+
+//    char *v_addr;
+//    char *p_addr;
+//    char *ustack;
+
+//    int pid;
+
+//    //Calcul du PID du new process. On assume jamais arrive au max
+//    //FIXME: reutiliser slots libres
+//    pid = 1;
+//    while(p_list[pid].state != 0 && pid++ < MAXPID);
+
+//    if(p_list[pid].state != 0)
+//    {
+//        Screen::getScreen().printError("not enough slot for processes");
+//        return;
+//    }
+
+//    //Cree la pile user
+
+//    //Cree la pile noyau
+//    kstack = get_page_from_heap();
+
+//    n_proc++;
+
+//    p_list[pid].pid = pid;
+
+//    /* Initialisation des registres */
+//    p_list[n_proc].regs.ss = 0x18;
+//    p_list[n_proc].regs.esp = (u32)kstack->v_addr + PAGESIZE - 16;
+//    p_list[n_proc].regs.eflags = 0x0;
+//    p_list[n_proc].regs.cs = 0x08;
+//    p_list[n_proc].regs.eip = (u32)&test;
+//    p_list[n_proc].regs.ds = 0x10;
+//    p_list[n_proc].regs.es = 0x10;
+//    p_list[n_proc].regs.fs = 0x10;
+//    p_list[n_proc].regs.gs = 0x10;
+//    p_list[n_proc].regs.cr3 = 0;
+
+//    p_list[n_proc].kstack.ss0 = 0x18;
+//    p_list[n_proc].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
+
+//    p_list[n_proc].regs.eax = 0;
+//    p_list[n_proc].regs.ecx = 0;
+//    p_list[n_proc].regs.edx = 0;
+//    p_list[n_proc].regs.ebx = 0;
+
+//    p_list[n_proc].regs.ebp = 0;
+//    p_list[n_proc].regs.esi = 0;
+//    p_list[n_proc].regs.edi = 0;
+
+//    p_list[pid].pd = 0;
+//    p_list[pid].pglist = 0;
+
+//    p_list[pid].state = 1;
+
+
+    cli;
+
+    struct thread *th = new struct thread;
+
+    struct page *kstack = get_page_from_heap();
+
+    th->regs.ss = 0x18;
+    th->regs.esp = (u32) kstack->v_addr + PAGESIZE - 16;
+
+    th->regs.eax = 0;
+    th->regs.ebx = 0;
+    th->regs.ecx = 0;
+    th->regs.edx = 0;
+
+    th->regs.ebp = 0;
+    th->regs.esi = 0;
+    th->regs.edi = 0;
+
+    th->regs.eflags = 0;
+    th->regs.cs = 0x8;
+    th->regs.ds = 0x10;
+    th->regs.es = 0x10;
+    th->regs.fs = 0x10;
+    th->regs.gs = 0x10;
+
+    th->state = 0;
+
+    void (*testFn)(u32) = &test;
+
+    asm("mov %0, %%eax;" :: "m"(th->regs.esp));
+
+    Screen::getScreen().printError("Test addr de ta CARROTE = %p", createThread);
+
+    asm(
+    "mov %0, %%ss;"
+        "mov %1, %%esp;"
+    ::
+    "m"(th->regs.ss), "m"(th->regs.esp));
+
+    asm("pushl $0xDEADBEEF;"
+        "pushl $0x0;"
+        "pushfl;"
+        "orl $0x200, (%%esp);"
+        "andl $0xFFFFBFFF, (%%esp);"
+        "push %%cs;"
+        "push %0;"
+        "iret;"
+        ::
+        "m"(testFn));
 }

@@ -1,4 +1,5 @@
 global do_switch
+global do_thread
 
 do_switch:
 	;recupere l'adresse de *current
@@ -40,3 +41,6 @@ do_switch:
 	pop eax
 
 	iret
+
+do_thread:
+    iret
