@@ -5,6 +5,7 @@
 #include <utils/lib.h>
 #include <video/Screen.h>
 #include <memory/kmalloc.h>
+#include <memory/mm.h>
 #include <pci/pciIds.h>
 #include <disk/IDE/IdeCtrl.h>
 
@@ -60,6 +61,19 @@ u8 pciConfigReadByte(u8 bus, u8 slot, u8 function, u8 offset)
 	tmp = (u8)((inl(0xCFC) >> ((offset & 3) * 8)) & 0xFF);
 	
 	return tmp;
+}
+
+void pciConfigWrite(u8 bus, u8 slot, u8 function, u8 offset, u32 data)
+{
+    u32 address;
+    u32 lbus = (u32)bus;
+    u32 lslot = (u32)slot;
+    u32 lfunc = (u32)function;
+
+    address = (u32)((lbus << 16) | (lslot << 11) | (lfunc << 8)
+                    | (offset & 0xFC) | ((u32) 0x80000000));
+
+    outl(0xCFC, data);
 }
 
 inline u16 pciCheckVendor(u8 bus, u8 slot)
@@ -202,7 +216,52 @@ void checkFunction(u8 bus, u8 device, u8 function)
 	}
 	
     displayDevice(vendor, classCode, subClass, devId);
-	
+
+
+    if(classCode == SerialBusCtrl && subClass == 0x03)
+    {
+        u8 progIf = pciConfigReadByte(bus, device, function, 0x9);
+
+        if(progIf == 0x0)
+            sScreen.println("UHCI Controller");
+        else if(progIf == 0x10)
+        {
+            u32 bar0 = pciConfigReadDWord(bus, device, function, 0x10);
+            u8 type = bar0 & 0x6;
+            char *p = reinterpret_cast<char*>(0xFFFFFFF0 & bar0);
+
+            pciConfigWrite(bus, device, function, 0x10, (u32)~0);
+
+            u32 res = pciConfigReadDWord(bus, device, function, 0x10);
+            res &= 0xFFFFFFF0;
+            res = ~res;
+            res++;
+
+            pciConfigWrite(bus, device, function, 0x10, bar0);
+
+            sScreen.println("OHCI Controller. type = %b, Memmory map %p - %p", type, p, p + res);
+
+            struct page *pages = get_page_from_heap(p, p + res);
+            u32 *mem = (u32*)pages->v_addr;
+
+            u8 rev = (*mem & 0xFF);
+
+            sScreen.printError("OHCI Version : %d.%d", rev >> 4, rev & 0xF);
+
+            u32 hcControl = mem[1];
+
+            if(!(hcControl & 0x100) && !(hcControl & 0xC0))
+            {
+                sScreen.printError("No active driver");
+
+                mem[1] = mem[1] | 0x40;
+            }
+        }
+        else
+            sScreen.println("Unknown USB Controller");
+    }
+
+    // TODO: gérer le cas où il y a plusieurs contrôleur IDE
 	if(classCode == MassStorageCtrl && subClass == 0x01)
 	{
 		ctrl = IdeCtrl(bus, device, function);
