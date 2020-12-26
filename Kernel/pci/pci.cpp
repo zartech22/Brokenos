@@ -180,7 +180,7 @@ void displayDevice(u16 vendor, u8 classCode, u8 subClassCode, u16 devId)
 	const char *vendorName = pciGetVendorName(vendor);
 	const char *className = pciGetClassCodeName(classCode);
 	
-	Screen::getScreen().printk("\t%s, Class : %s, SubClass : %x, DevId : %x\n", vendorName,
+	sScreen.printk("\t%s, Class : %s, SubClass : %x, DevId : %x\n", vendorName,
 				className, subClassCode, devId);
 	
 	delete[] vendorName;

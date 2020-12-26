@@ -27,7 +27,6 @@ Screen& Screen::getScreen()
 
 void Screen::initScreen(mb_partial_info *info)
 {
-
     if(info->flags & VBE_INFO)
     {
         VbeModeInfo *vbeInfo = (struct VbeModeInfo*)info->vbe_mode_info;
@@ -44,6 +43,8 @@ void Screen::initScreen(mb_partial_info *info)
 
             //_inst->printError("Graphic virtual memory starts : %p - ends %p, page : %d", framebuffer->v_addr, framebuffer->v_addr + info->YResolution * info->BytesPerScanLine, (info->YResolution * info->BytesPerScanLine) / PAGESIZE);
 
+            _inst->clean();
+            _inst->printError("[%s] Framebuffer : %p", __FUNCTION__, framebuffer->v_addr);
             delete framebuffer;
         }
         else
@@ -60,6 +61,9 @@ void Screen::initScreen(mb_partial_info *info)
 
             Screen::_inst = new GraphicDisplayMode(framebuffer->v_addr, info->framebuffer_width, info->framebuffer_height, info->framebuffer_bpp, info->framebuffer_pitch);
 
+            _inst->clean();
+            _inst->printError("Framebuffer !");
+
             delete framebuffer;
         }
     }
@@ -70,7 +74,7 @@ void Screen::print(const char *string, ...)
 	va_list ap;
 	va_start(ap, string);
 	
-	printk_core(string, ap);
+	print_core(string, ap);
 	
 	va_end(ap);
 }
@@ -81,7 +85,8 @@ void Screen::println(const char *string, ...)
 	va_start(ap, string);
 	
 	print_core(string, ap);
-	putcar('\n');
+    putcar('\n');
+    putcar('\n');
 	
 	va_end(ap);
 }

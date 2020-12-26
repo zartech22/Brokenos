@@ -44,22 +44,21 @@ void IdeCtrl::displayModelNames()
 
 void IdeCtrl::displayTree()
 {
-    Screen &s = Screen::getScreen();
+    sScreen.println("Ide controller: PCI(%u, %u, %u)", _bus, _device, _function);
+    sScreen.putcar(0xB3);
+    sScreen.putcar(0x0A);
 
-    s.putcar(0xB3);
-    s.putcar(0x0A);
+    sScreen.putcar(0xC3);
+    sScreen.printk(" Primary master : %s\n", _drives[0]->getModelName());
 
-    s.putcar(0xC3);
-    s.printk(" Primary master : %s\n", _drives[0]->getModelName());
+    sScreen.putcar(0xC3);
+    sScreen.printk(" Primary slave : %s\n", _drives[1]->getModelName());
 
-    s.putcar(0xC3);
-    s.printk(" Primary slave : %s\n", _drives[1]->getModelName());
+    sScreen.putcar(0xC3);
+    sScreen.printk(" Secundary master : %s\n", _drives[2]->getModelName());
 
-    s.putcar(0xC3);
-    s.printk(" Secundary master : %s\n", _drives[2]->getModelName());
-
-    s.putcar(0xC0);
-    s.printk(" Secundary slave : %s\n", _drives[3]->getModelName());
+    sScreen.putcar(0xC0);
+    sScreen.printk(" Secundary slave : %s\n", _drives[3]->getModelName());
 }
 
 void IdeCtrl::checkPorts()

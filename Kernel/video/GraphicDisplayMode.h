@@ -159,7 +159,7 @@ public:
         }
     }
 
-    inline virtual void clean() override { memset((char*)_frameBuffer, 0, (_maxY + 1) * _bytePerLine * 8); }
+    inline virtual void clean() override { memset((char*)_frameBuffer, 0, (_maxY + 1) * _bytePerLine * 8); memset((char*)_buffer, 0, (_maxY + 1) * _bytePerLine * 8); }
 
 private:
     friend class Screen;
@@ -173,16 +173,20 @@ private:
 
         checkBounds(_buffer, info->YResolution * _bytePerLine);
         memset((char*)_buffer, 0, info->YResolution * _bytePerLine);
+
+        printDebug("[%s] Framebuffer : %p", __FUNCTION__, framebuffer);
     }
 
     GraphicDisplayMode(char *framebuffer, u32 width, u32 height, u8 bitsPerPixel, u32 bytePerScanline) : _frameBuffer((uchar*)framebuffer), _bytePerLine(bytePerScanline),
-        _bitsPerPixel(bitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[height * bytePerScanline])
+        _bitsPerPixel(bitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[height * bytePerScanline]), _pixel(_frameBuffer)
     {
         _maxX = width / 8 - 1;
         _maxY = height / 8 - 1;
 
         checkBounds(_buffer, height * _bytePerLine);
         memset((char*)_buffer, 0, height* _bytePerLine);
+
+        printDebug("[%s] Framebuffer : %p", __FUNCTION__, framebuffer);
     }
 
     uchar * const _buffer;

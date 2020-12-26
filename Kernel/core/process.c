@@ -138,7 +138,7 @@ int load_task(const char *filename)
 
     if (p_list[pid].state != 0)
     {
-        Screen::getScreen().printk("PANIC: not enough slot for processes\n");
+        sScreen.printk("PANIC: not enough slot for processes\n");
         return 0;
     }
 

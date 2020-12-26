@@ -4,6 +4,8 @@
 #include <cstdarg>
 #include <utils/types.h>
 
+#define sScreen Screen::getScreen()
+
 enum Color
 {
 	Black		= 0x0,
@@ -69,7 +71,8 @@ public :
 private :
     friend int main(struct mb_partial_info *);
 
-    Screen(VbeModeInfo *info) : _posX(0), _posY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
+    explicit Screen(VbeModeInfo *info) : _posX(0), _posY(0), _maxX(0), _maxY(0), _colors(0x0E), _showCursor(false),
+								_isLoading(false), _ticNbr(0) { _inst = this; }
 
     static void initScreen(mb_partial_info*);
     static Screen *_inst;
@@ -86,7 +89,8 @@ private :
     void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
 	
 protected:
-    Screen() : _posX(0), _posY(0), _maxX(0), _maxY(0), _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0) { _inst = this; }
+    Screen() : _posX(0), _posY(0), _maxX(0), _maxY(0), _colors(0x0E), _showCursor(false), _isLoading(false),
+               _ticNbr(0) { _inst = this; }
 
     virtual void scrollup(u8);
     u8 _posX, _posY, _maxX, _maxY;
