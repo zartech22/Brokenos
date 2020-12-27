@@ -4,7 +4,9 @@ CFLAGS=-m32 -std=c++11 -g -c -o0 -fno-exceptions -nostdlib -ffreestanding -fno-r
 LD=ld
 LDFLAGS=-m elf_i386 -T build/linker.ld
 
-OBJECTS= $(shell find build/ -type f -name "*.o")
+FIND_COMMAND=find build/ -type f -name "*.o"
+
+OBJECTS= $(shell $(FIND_COMMAND))
 
 export CC
 export CFLAGS
@@ -25,4 +27,4 @@ compile:
 	$(MAKE) -C video
 
 clean:
-	rm -rf build/*.o
+	$(FIND_COMMAND) -delete
