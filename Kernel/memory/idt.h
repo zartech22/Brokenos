@@ -21,12 +21,12 @@ struct idtr
 } __attribute__ ((packed));
 
 #ifdef __IDT__
-	struct idtr kidtr;
-	struct idtdesc kidt[IDTSIZE];
+	idtr kidtr;
+	idtdesc kidt[IDTSIZE];
 #else
-	extern struct idtr kidtr;
-	extern struct idtdesc kidt[];
+	extern idtr kidtr;
+	extern idtdesc kidt[];
 #endif
 
-void init_idt_desc(u16, u32, u16, struct idtdesc *desc);
+void init_idt_desc(u16, u32, u16, idtdesc *desc);
 void init_idt();

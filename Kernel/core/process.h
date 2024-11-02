@@ -53,12 +53,12 @@ struct thread
 };
 
 #ifdef __PLIST__
-	struct process p_list[MAXPID + 1];
-	struct process *current = 0;
+	process p_list[MAXPID + 1];
+	process *current = 0;
 	int n_proc = 0;
 #else
-    extern "C" struct process p_list[];
-    extern "C" struct process *current;
+    extern "C" process p_list[];
+    extern "C" process *current;
     extern "C" int n_proc;
 #endif
 

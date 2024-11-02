@@ -1,24 +1,21 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include <memory/kmalloc.h>
-
 #include <video/Screen.h>
-#include <utils/types.h>
 
 template<typename T>
-struct is_pointer { static const bool value = false; };
+struct is_pointer { static constexpr bool value = false; };
 
 template<typename T>
-struct is_pointer<T*> { static const bool value = true; };
+struct is_pointer<T*> { static constexpr bool value = true; };
 
 template<typename T, bool destroyPtr = true>
 class Vector
 {
 public:
-    Vector() : _size(0), _cap(10), _tab(new T[10]) {}
+    Vector() : _tab(new T[10]), _cap(10), _size(0) {}
 
-    explicit Vector(unsigned int n, T val = T()) : _size(0)
+    explicit Vector(const unsigned int n, T val = T()) : _size(0)
     {
         _cap = (n != 0) ? n : 1;
         _tab = new T[_cap];
@@ -32,10 +29,10 @@ public:
 
     ~Vector() { clear(); delete[] _tab; }
 
-    unsigned int size() const { return _size; }
-    unsigned int capacity() const { return _cap; }
+    [[nodiscard]] unsigned int size() const { return _size; }
+    [[nodiscard]] unsigned int capacity() const { return _cap; }
 
-    bool empty() const { return (_size == 0); }
+    [[nodiscard]] bool empty() const { return (_size == 0); }
 
     T& at(unsigned int n)
     {
@@ -122,8 +119,6 @@ private:
     void increaseSize()
     {
         _cap *= 2;
-        _tab = (T*)krealloc(_tab, sizeof(T) * _cap);
+        _tab = static_cast<T *>(krealloc(_tab, sizeof(T) * _cap));
     }
 };
-
-#endif // VECTOR_H

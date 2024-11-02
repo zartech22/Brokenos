@@ -11,10 +11,10 @@ bool Ext2FS::isExt2FS(char *data)
 		return false;
 	}
 
-	return (((struct ext2_super_block*)data)->ext2_magic == EXT2_MAGIC_NUMBER);
+	return (reinterpret_cast<ext2_super_block *>(data)->ext2_magic == EXT2_MAGIC_NUMBER);
 }
 
-Ext2FS::Ext2FS(struct Partition &part, IdeDrive &drive) : FileSystem(part, drive)
+Ext2FS::Ext2FS(const Partition &part, IdeDrive &drive) : FileSystem(part, drive)
 {
     initFsRoot();
 }
@@ -25,28 +25,28 @@ void Ext2FS::initFsRoot()
 
     _blockSize = 1024 << _sb->log_block_size;
 
-    int i = (_sb->block_count / _sb->blocks_per_group) +
-            ((_sb->block_count % _sb->blocks_per_group) ? 1 : 0);
+    const int i = (_sb->block_count / _sb->blocks_per_group) +
+                  ((_sb->block_count % _sb->blocks_per_group) ? 1 : 0);
 
-    int j = (_sb->inodes_count / _sb->inodes_per_group) +
-            ((_sb->inodes_count % _sb->inodes_per_group) ? 1 : 0);
+    const int j = (_sb->inodes_count / _sb->inodes_per_group) +
+                  ((_sb->inodes_count % _sb->inodes_per_group) ? 1 : 0);
 
     _groupNumber = (i > j) ? i : j;
 
     readGroupBlock();
 
-    struct file *rootFile = getRoot();
+    file *rootFile = getRoot();
 
-    struct filePrivateData *data = (struct filePrivateData*)kmalloc(sizeof(struct filePrivateData));
+    auto *data = static_cast<filePrivateData *>(kmalloc(sizeof(filePrivateData)));
 
-    rootFile->name = (char*)kmalloc(strlen("/") + 1);
+    rootFile->name = static_cast<char *>(kmalloc(strlen("/") + 1));
     strcpy(rootFile->name, "/");
 
     data->inum = EXT2_INUM_ROOT;
     data->inode = readInode(EXT2_INUM_ROOT);
 
     rootFile->content = nullptr;
-    rootFile->privateData = (void*)data;
+    rootFile->privateData = static_cast<void *>(data);
     rootFile->parent = rootFile;
     rootFile->leaf = getDirEntries(rootFile);
     rootFile->next = nullptr;
@@ -55,45 +55,39 @@ void Ext2FS::initFsRoot()
 
 void Ext2FS::readSuperBlock()
 {
-    _sb = (struct ext2_super_block*)readFromDisk(1024, sizeof(struct ext2_super_block));
+    _sb = reinterpret_cast<ext2_super_block *>(readFromDisk(1024, sizeof(ext2_super_block)));
 }
 
 void Ext2FS::readGroupBlock()
 {
-    int offset, gd_size;
+	const int offset = (_blockSize == 1024) ? 2048 : _blockSize;
 
-    offset = (_blockSize == 1024) ? 2048 : _blockSize;
+	const int gd_size = _groupNumber * sizeof(struct ext2_group_desc);
 
-    gd_size = _groupNumber * sizeof(struct ext2_group_desc);
-
-    _groups = (struct ext2_group_desc*)readFromDisk(offset, gd_size);
+    _groups = reinterpret_cast<ext2_group_desc *>(readFromDisk(offset, gd_size));
 }
 
-struct ext2_inode* Ext2FS::readInode(int num)
-{
-	int gr_num, index, offset;
+ext2_inode* Ext2FS::readInode(const int num) const {
+	//struct ext2_inode *inode = (struct ext2_inode*)kmalloc(sizeof(struct ext2_inode));
 
-    //struct ext2_inode *inode = (struct ext2_inode*)kmalloc(sizeof(struct ext2_inode));
-    struct ext2_inode *inode;
+	const int gr_num = (num - 1) / _sb->inodes_per_group;
 
-    gr_num = (num - 1) / _sb->inodes_per_group;
+	const int index = (num - 1) % _sb->inodes_per_group;
 
-    index = (num - 1) % _sb->inodes_per_group;
+	const int offset = _groups[gr_num].inode_table * _blockSize + index * _sb->inode_size;
 
-    offset = _groups[gr_num].inode_table * _blockSize + index * _sb->inode_size;
-
-    inode = (ext2_inode*)readFromDisk(offset, _sb->inode_size);
+    auto *inode = reinterpret_cast<ext2_inode *>(readFromDisk(offset, _sb->inode_size));
 
 	return inode;
 }
 
 char* Ext2FS::readFile(const char *path)
 {
-	struct file *f = 0;
+	file *f = nullptr;
 
     if((f = getFile(path)))
 	{
-        struct filePrivateData *data = (struct filePrivateData*)f->privateData;
+		const auto *data = static_cast<struct filePrivateData *>(f->privateData);
         if(!data->inode)
             readInode(data->inum);
         f->size = data->inode->size;
@@ -103,20 +97,19 @@ char* Ext2FS::readFile(const char *path)
 		return nullptr;
 }
 
-char* Ext2FS::readFile(struct file *file)
+char* Ext2FS::readFile(file *file)
 {
-	char *mmap_base, *mmap_head, *buf;
+	char *mmap_base, *buf;
 
-	int *p,*pp, *ppp;
+	int *p,*pp;
     int n;
-    unsigned int size;
 
-    struct filePrivateData *data = (struct filePrivateData*)file->privateData;
+	const auto *data = static_cast<filePrivateData *>(file->privateData);
 
     if(!data)
         return nullptr;
 
-    struct ext2_inode *inode = data->inode;
+	const ext2_inode *inode = data->inode;
 
     //Screen::getScreen().printInfo("\tData inode : %p, num %u, size %u", data->inode, data->inum, inode->size);
 
@@ -125,9 +118,9 @@ char* Ext2FS::readFile(struct file *file)
     //pp = (int*)kmalloc(_blockSize);
     //ppp = (int*)kmalloc(_blockSize);
 
-	size = inode->size; // Taille totale du fichier
+	unsigned int size = inode->size; // Taille totale du fichier
     file->size = inode->size;
-	mmap_head = mmap_base = (char*)kmalloc(size);
+	char *mmap_head = mmap_base = static_cast<char *>(kmalloc(size));
 
     //Screen::getScreen().printDebug("BlockSize : %d", _blockSize);
 
@@ -148,7 +141,7 @@ char* Ext2FS::readFile(struct file *file)
 	// Indirect block number
 	if(inode->block[12])
 	{
-         p = (int*)readFromDisk(inode->block[12] * _blockSize, _blockSize);
+         p = reinterpret_cast<int *>(readFromDisk(inode->block[12] * _blockSize, _blockSize));
 
 		for(int i = 0; i < _blockSize / 4 && p[i]; ++i)
         {
@@ -169,11 +162,11 @@ char* Ext2FS::readFile(struct file *file)
 	// Bi-indirect block number
 	if(inode->block[13])
     {
-         p = (int*)readFromDisk(inode->block[13] * _blockSize, _blockSize);
+         p = reinterpret_cast<int *>(readFromDisk(inode->block[13] * _blockSize, _blockSize));
 
 		for(int i = 0; i < _blockSize / 4 && p[i]; ++i)
 		{
-             pp = (int*)readFromDisk(p[i] * _blockSize, _blockSize);
+             pp = reinterpret_cast<int *>(readFromDisk(p[i] * _blockSize, _blockSize));
 
 			for(int j = 0; j < _blockSize / 4 && pp[j]; ++j)
             {
@@ -197,15 +190,15 @@ char* Ext2FS::readFile(struct file *file)
 	// Tri-indirect block number
 	if(inode->block[14])
     {
-         p = (int*)readFromDisk(inode->block[14] * _blockSize, _blockSize);
+	    p = reinterpret_cast<int *>(readFromDisk(inode->block[14] * _blockSize, _blockSize));
 
 		for(int i = 0; i < _blockSize / 4 && p[i]; ++i)
 		{
-             pp = (int*)readFromDisk(p[i] * _blockSize, _blockSize);
+             pp = reinterpret_cast<int *>(readFromDisk(p[i] * _blockSize, _blockSize));
 
 			for(int j = 0; j < _blockSize / 4 && pp[j]; ++j)
             {
-                ppp = (int*)readFromDisk(pp[j] * _blockSize, _blockSize);
+                int *ppp = reinterpret_cast<int *>(readFromDisk(pp[j] * _blockSize, _blockSize));
 
 				for(int k = 0; k < _blockSize / 4 && ppp[k]; ++k)
 				{
@@ -232,9 +225,9 @@ char* Ext2FS::readFile(struct file *file)
 	return mmap_base;
 }
 
-bool Ext2FS::isDirectory(struct file *f)
+bool Ext2FS::isDirectory(file *f)
 {
-    struct filePrivateData *data = (struct filePrivateData*)f->privateData;
+    auto *data = static_cast<struct filePrivateData *>(f->privateData);
 
     if(!data->inode)
         data->inode = readInode(data->inum);
@@ -242,11 +235,9 @@ bool Ext2FS::isDirectory(struct file *f)
     return (data->inode->mode & EXT2_DIR);
 }
 
-struct file* Ext2FS::isCachedLeaf(struct file *dir, char *filename)
+file* Ext2FS::isCachedLeaf(const file *dir, const char *filename)
 {
-    struct file *leaf;
-
-	leaf = dir->leaf;
+	file *leaf = dir->leaf;
 
     //Screen::getScreen().printDebug("CacheLeaf leaf : %p", leaf);
 
@@ -262,15 +253,10 @@ struct file* Ext2FS::isCachedLeaf(struct file *dir, char *filename)
 	return nullptr;
 }
 
-struct file* Ext2FS::getDirEntries(struct file *dir)
+file* Ext2FS::getDirEntries(file *dir)
 {
-    struct directory_entry *dentry;
-    struct filePrivateData *data = (struct filePrivateData*)dir->privateData;
-    struct file *firstLeaf, *leaf, *prevLeaf;
-
-	u32 dsize;
-
-    char *filename;
+	auto *data = static_cast<struct filePrivateData *>(dir->privateData);
+    file *leaf, *prevLeaf;
 
 	bool fileToClose;
 
@@ -286,33 +272,31 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 		return nullptr;
 	}
 
-    if(!dir->content)
-	{
-        dir->content = readFile(dir);
+	if (!dir->content) {
+		dir->content = readFile(dir);
 		fileToClose = true;
-	}
-	else
+	} else
 		fileToClose = false;
 
-    dsize = data->inode->size;
-    dentry = (struct directory_entry*) dir->content;
+    u32 dsize = data->inode->size;
+    auto *dentry = reinterpret_cast<struct directory_entry *>(dir->content);
 
-	firstLeaf = prevLeaf = dir->leaf;
+	file *firstLeaf = prevLeaf = dir->leaf;
 
 	while(dentry->inode && dsize)
 	{
-		filename = (char*)kmalloc(dentry->name_len + 1);
+		const auto filename = static_cast<char *>(kmalloc(dentry->name_len + 1));
         memcpy(filename, &(dentry->name), dentry->name_len);
         filename[dentry->name_len] = 0;
 
 		if(strcmp(".", filename) != 0 && strcmp("..", filename) != 0)
 		{
-			if(!(leaf = isCachedLeaf(dir, filename)))
+			if(!((leaf = isCachedLeaf(dir, filename))))
 			{
-                struct filePrivateData *privData = (struct filePrivateData*)kmalloc(sizeof(struct filePrivateData));
+                auto *privData = static_cast<filePrivateData *>(kmalloc(sizeof(filePrivateData)));
 
-				leaf = (struct file*)kmalloc(sizeof(struct file));
-				leaf->name = (char*)kmalloc(dentry->name_len + 1);
+				leaf = static_cast<file *>(kmalloc(sizeof(file)));
+				leaf->name = static_cast<char *>(kmalloc(dentry->name_len + 1));
                 strcpy(leaf->name, filename);
 
                 //Screen::getScreen().printDebug("Name : %s", filename);
@@ -352,7 +336,7 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
         kfree(filename);
 
 		dsize -= dentry->record_entry;
-		dentry = (struct directory_entry*) ((char*) dentry + dentry->record_entry);
+		dentry = reinterpret_cast<directory_entry *>(reinterpret_cast<char *>(dentry) + dentry->record_entry);
 	}
 
 	dir->leaf = firstLeaf;
@@ -366,39 +350,34 @@ struct file* Ext2FS::getDirEntries(struct file *dir)
 	return firstLeaf;
 }
 
-struct file* Ext2FS::getFile(const char *filename)
+file* Ext2FS::getFile(const char *filename)
 {
-    char *name;
-    const char *beg_p, *end_p;
-    struct file *file;
-    struct filePrivateData *data;
-
 	// TODO: Faire le reste !
 	/*if(path[O] != '/')
 		fp = current->pwd;
 	else*/
-        file = getRoot();
+        struct file *file = getRoot();
 
-	beg_p = filename;
+	const char *beg_p = filename;
 
 	while(*beg_p == '/')
 		beg_p++;
-    end_p = beg_p + 1;
+    const char *end_p = beg_p + 1;
 
 	while(*beg_p != 0)
 	{
-        data = (struct filePrivateData*)file->privateData;
+        auto *data = static_cast<filePrivateData *>(file->privateData);
 
         if(!data->inode)
             data->inode = readInode(data->inum);
 
 		if(!isDirectory(file))
-			return 0;
+			return nullptr;
 
 		while(*end_p != 0 && *end_p != '/')
 			end_p++;
 
-		name = (char*)kmalloc(end_p - beg_p + 1);
+        const auto name = static_cast<char *>(kmalloc(end_p - beg_p + 1));
 		memcpy(name, beg_p, end_p - beg_p);
 		name[end_p - beg_p] = 0;
 
@@ -414,7 +393,7 @@ struct file* Ext2FS::getFile(const char *filename)
 
             //Screen::getScreen().printError("Filename : %s, dir : %s", name, file->name);
 
-			if(!(file = isCachedLeaf(file, name)))
+			if(!((file = isCachedLeaf(file, name))))
             {
                 kfree(name);
 				return nullptr;

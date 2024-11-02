@@ -17,7 +17,7 @@
 #endif
 
 #ifdef _TIME_
-    u64 msTime = 0;
+inline u64 msTime = 0;
 #else
     extern u64 msTime;
 #endif

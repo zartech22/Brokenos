@@ -2,8 +2,6 @@
 #include <memory/gdt.h>
 #include <core/process.h>
 
-#include <video/Screen.h>
-
 void switch_to_task(int n, int mode)
 {
 	u32 kesp, eflags;
@@ -60,7 +58,7 @@ void switch_to_task(int n, int mode)
 
 void schedule()
 {
-	struct process *p;
+	process *p;
 	u32 *stack_ptr;
     int newpid;
 	

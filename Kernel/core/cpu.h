@@ -1,5 +1,4 @@
-#ifndef CPU_H
-#define CPU_H
+#pragma once
 
 #include <utils/String.h>
 
@@ -8,7 +7,7 @@ class CPU
 public:
     static String getVendor()
     {
-        u32 *vendor = (u32*)kmalloc(13);
+        auto vendor = static_cast<u32 *>(kmalloc(13));
 
         asm ("xor %%eax, %%eax;"
                     "cpuid;"
@@ -16,7 +15,7 @@ public:
 
         vendor[12] = '\0';
 
-        String res((char*)vendor);
+        String res(reinterpret_cast<char *>(vendor));
 
         kfree(vendor);
 
@@ -25,7 +24,7 @@ public:
 
     static String getBrand()
     {
-        u32 *brand = (u32*)kmalloc(49);
+        auto brand = static_cast<u32 *>(kmalloc(49));
 
         asm ("cpuid;" : "=a" (*brand), "=b" (*(brand + 1)), "=c" (*(brand + 2)), "=d" (*(brand + 3)) : "a" (0x80000002));
         asm ("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));
@@ -33,12 +32,10 @@ public:
 
         brand[48] = '\0';
 
-        String res((char*)brand);
+        String res(reinterpret_cast<char *>(brand));
 
         kfree(brand);
 
         return res;
     }
 };
-
-#endif // CPU_H

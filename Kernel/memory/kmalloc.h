@@ -1,11 +1,8 @@
-#ifndef _KMALLOC_
-#define _KMALLOC_
+#pragma once
 
-#include <stddef.h>
+#include <cstddef>
 
-#include <utils/types.h>
-
-#define KMALLOC_MINSIZE	16
+constexpr unsigned long KMALLOC_MINSIZE = 16;
 
 struct kmalloc_header
 {
@@ -23,5 +20,3 @@ void* ksbrk(unsigned int);
 void* kmalloc(unsigned long);
 void* krealloc(void*, unsigned long);
 void kfree(const void*);
-
-#endif

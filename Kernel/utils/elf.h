@@ -1,5 +1,4 @@
-#ifndef ELF_H
-#define ELF_H
+#pragma once
 
 #include <utils/types.h>
 #include <memory/mm.h>
@@ -83,6 +82,4 @@ typedef struct
 } Elf_program_header;
 
 bool isElf(char*);
-u32 loadElf(char*, struct page_directory*, struct page_list*);
-
-#endif // ELF_H
+u32 loadElf(char*, page_directory*, page_list*);

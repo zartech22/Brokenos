@@ -1,8 +1,4 @@
-#ifndef LINKEDLIST_H
-#define LINKEDLIST_H
-
-#include <utils/types.h>
-#include <memory/kmalloc.h>
+#pragma once
 
 template<typename T>
 class LinkedList
@@ -10,7 +6,7 @@ class LinkedList
 public:
     LinkedList() : _head(nullptr), _tail(nullptr), _size(0), _default() {}
     //TODO: handle copy
-    LinkedList(const LinkedList<T> &o) : _size(0) {}
+    LinkedList(const LinkedList<T> &o) : _head(nullptr), _tail(nullptr), _size(0) {}
 
     ~LinkedList() { clear(); }
 
@@ -112,7 +108,7 @@ public:
         }
     }
 
-    bool erase(size_t n)
+    bool erase(const size_t n)
     {
         if(n < _size)
         {
@@ -145,9 +141,11 @@ public:
         {
             auto current = _head;
 
-            while(current->next != nullptr)
+            while(current->next != nullptr) {
                 if(current->prev != nullptr)
                     delete current->prev;
+                current = current->next;
+            }
 
             delete current;
 
@@ -155,7 +153,7 @@ public:
         }
     }
 
-    T& at(size_t n)
+    T& at(const size_t n)
     {
         if(n < _size)
         {
@@ -170,7 +168,7 @@ public:
             return _default;
     }
 
-    const T& at(size_t n) const
+    const T& at(const size_t n) const
     {
         if(n < _size)
         {
@@ -206,14 +204,14 @@ public:
     }
 
 
-    size_t size() const { return _size; }
-    bool empty() const { return _size == 0; }
+    [[nodiscard]] size_t size() const { return _size; }
+    [[nodiscard]] bool empty() const { return _size == 0; }
 
 
     //TODO: handle copy
-    LinkedList<T>& operator=(const LinkedList<T>& other) {}
-    T& operator[](size_t n) { return at(n); }
-    const T& operator[](size_t n) const { return at(n); }
+    LinkedList& operator=(const LinkedList<T>& other) {}
+    T& operator[](const size_t n) { return at(n); }
+    const T& operator[](const size_t n) const { return at(n); }
 
 protected:
     void insertFirstElement(T element)
@@ -232,16 +230,14 @@ private:
     struct Element
     {
         T elem;
-        struct Element *prev;
-        struct Element *next;
+        Element *prev;
+        Element *next;
     };
 
-    struct Element *_head;
-    struct Element *_tail;
+    Element *_head;
+    Element *_tail;
 
     size_t _size;
     T _default;
 
 };
-
-#endif // LINKEDLIST_H

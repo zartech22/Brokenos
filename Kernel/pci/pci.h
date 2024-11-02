@@ -1,7 +1,6 @@
 #pragma once
 
 #include <utils/types.h>
-#include <disk/IDE/IdeCtrl.h>
 
 u32 pciConfigReadDWord(u8 bus, u8 slot, u8 function, u8 offset);
 u16 pciConfigReadWord(u8 bus, u8 slot, u8 function, u8 offset);

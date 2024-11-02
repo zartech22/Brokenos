@@ -29,7 +29,7 @@
 
 #define VADDR_PD_OFFSET(addr)	((addr) & 0xFFC00000) >> 22
 #define VADDR_PT_OFFSET(addr)	((addr) & 0x003FF000) >> 12
-#define VADDR_PG_OFFSET(addr)	(addr) & 0x00000FFF
+#define VADDR_PG_OFFSET(addr)	((addr) & 0x00000FFF)
 #define PAGE(addr)				(addr) >> 12
 
 #define PAGING_FLAG	0x80000000
@@ -53,35 +53,35 @@ struct page
 struct page_list
 {
 	struct page *page;
-	struct page_list *next;
-	struct page_list *prev;
+	page_list *next;
+	page_list *prev;
 };
 
 struct page_directory
 {
-	struct page *base;
-	struct page_list *pt;
+	page *base;
+	page_list *pt;
 };
 
 struct vm_area
 {
 	char *vm_start;
 	char *vm_end; //exclue
-	struct vm_area *next;
-	struct vm_area *prev;
+	vm_area *next;
+	vm_area *prev;
 };
 
 #endif
 
 #ifdef __MM__
-char *kern_heap;
-struct vm_area *free_vm;
+inline char *kern_heap;
+inline vm_area *free_vm;
 
-u32 *pd0 = (u32*) KERN_PDIR;	//kernel page dir
-char *pg0 = (char*) 0; //kernel page 0 (4MB)
-char *pg1 = (char*) 0x400000; //kernel page 1 (4MB)
-char *pg1_end = (char*) 0x800000; //limite page 1
-u8 mem_bitmap[RAM_MAXPAGE / 8];	//bitmap allocation page 1Go
+inline auto pd0 = reinterpret_cast<u32 *>(KERN_PDIR);	//kernel page dir
+inline char *pg0 = nullptr; //kernel page 0 (4MB)
+inline auto pg1 = reinterpret_cast<char *>(0x400000); //kernel page 1 (4MB)
+inline auto pg1_end = reinterpret_cast<char *>(0x800000); //limite page 1
+inline u8 mem_bitmap[RAM_MAXPAGE / 8];	//bitmap allocation page 1Go
 #else
 extern char *kern_heap;
 extern struct vm_area *free_vm;
@@ -98,8 +98,8 @@ extern u8 mem_bitmap[];
 char *get_page_frame();
 
 //selectionne / libere page libre dans le bitmap et l'associe a page virtuelle libre du heap
-struct page* get_page_from_heap();
-struct page* get_page_from_heap(char* p_addr, char* end_p_addr = 0);
+page* get_page_from_heap();
+page* get_page_from_heap(char* p_addr, const char* end_p_addr = nullptr);
 int release_page_from_heap(char *);
 
 //init les struct de donnees de gestion de la memoire
@@ -107,10 +107,10 @@ void init_mm(u32);
 
 //creer un rep de page pour une tache
 struct page_directory* pd_create();
-int pd_destroy(struct page_directory*);
+int pd_destroy(const struct page_directory*);
 
 //Ajoute entree dans l'espace noyau
-int pd0_add_page(char*, char*, int);
+int pd0_add_page(const char*, char*, int);
 
 //Ajoute / enleve une entree dans repertoire de page courant
 int pd_add_page(char*, char*, int, struct page_directory*);

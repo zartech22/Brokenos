@@ -25,17 +25,17 @@
 #include <disk/FileSystems/Ext2/Ext2FS.h>
 
 void init_pic();
-int main(struct mb_partial_info *multiboot_info);
+int main(mb_partial_info *multiboot_info);
 
-extern "C" void kmain(struct mb_partial_info*);
+extern "C" void kmain(mb_partial_info*);
 
-void kmain(struct mb_partial_info *memInfo)
+void kmain(mb_partial_info *memInfo)
 {
 	cli;
     main(memInfo);
 }
 
-int main(struct mb_partial_info *mbinfo)
+int main(mb_partial_info *mbinfo)
 {
     init_gdt();
     // Update SS and ESP
@@ -43,7 +43,7 @@ int main(struct mb_partial_info *mbinfo)
          movw %%ax, %%ss		\n \
          movl %0, %%esp" :: "i"(KERN_STACK));
 
-    struct mmapInfo mmap[1024];
+    mmapInfo mmap[1024];
     u32 size = mbinfo->mmap_length;
     int index = 0;
 
@@ -51,7 +51,7 @@ int main(struct mb_partial_info *mbinfo)
      {
          auto *currentMmap = reinterpret_cast<struct mmapInfo*>(mbinfo->mmap_addr);
 
-         while((u32)currentMmap < (mbinfo->mmap_addr + mbinfo->mmap_length))
+         while(reinterpret_cast<u32>(currentMmap) < (mbinfo->mmap_addr + mbinfo->mmap_length))
          {
              mmap[index].addr_low = currentMmap->addr_low;
              mmap[index].addr_high = currentMmap->addr_high;
@@ -129,7 +129,7 @@ int main(struct mb_partial_info *mbinfo)
 	current = &p_list[0];
 	current->pid = 0;
 	current->state = 1;
-	current->regs.cr3 = (u32) pd0;
+	current->regs.cr3 = reinterpret_cast<u32>(pd0);
 
     //n_proc = 0;
     //n_proc++;
@@ -174,7 +174,8 @@ int main(struct mb_partial_info *mbinfo)
     //s.printDebug("Taille fichier : %s, %u", test->name, test->size);
 
 //    FileSystem *fs = FileSystem::getFsList().at(0);
-    sScreen.printDebug("Nb FS : %b", (&(FileSystem::getFsList()) == 0));
+    sScreen.printDebug("Tete de bite de merde !!!");
+    sScreen.printDebug("Nb FS : %b", (&(FileSystem::getFsList()) == nullptr));
 
 //    s.printError("\tStart LBA : %u", fs->getPartition().s_lba);
 //    auto f = fs->getFile("foo.txt");
@@ -198,7 +199,7 @@ int main(struct mb_partial_info *mbinfo)
 
     sti;
 
-    createThread((char*)0xBADA55);
+    // createThread((char*)0xBADA55);
 
 	for(;;)
 		asm("hlt");

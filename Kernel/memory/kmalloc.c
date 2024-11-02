@@ -4,12 +4,12 @@
 #include <memory/kmalloc.h>
 #include <video/Screen.h>
 
-void* operator new(size_t size)
+void* operator new(const size_t size)
 {
 	return kmalloc(size);
 }
 
-void* operator new[](size_t size)
+void* operator new[](const size_t size)
 {
 	return kmalloc(size);
 }
@@ -24,28 +24,35 @@ void operator delete[](void *mem)
 	kfree(mem);
 }
 
-void* ksbrk(unsigned int n)
+void operator delete(void *mem, size_t)
 {
-	struct kmalloc_header *chunk;
-	char *p_addr;
-	
-	if((kern_heap + (n * PAGESIZE)) > (char*) KERN_HEAP_LIM)
+	operator delete(mem);
+}
+
+void operator delete[](void *mem, size_t)
+{
+	operator delete(mem);
+}
+
+void* ksbrk(const unsigned int n)
+{
+	if((kern_heap + (n * PAGESIZE)) > reinterpret_cast<char *>(KERN_HEAP_LIM))
 	{
 		Screen::getScreen().printError("ksbrk() : no virtual memomry left for kernel heap !");
-		return (char*) -1;
+		return reinterpret_cast<char *>(-1);
 	}
 	
-	chunk = (struct kmalloc_header*) kern_heap;
+	auto *chunk = reinterpret_cast<struct kmalloc_header *>(kern_heap);
 	
 	//Alloc page libre
     for(unsigned int i = 0; i < n; i++)
 	{
-		p_addr = get_page_frame();
+		char *p_addr = get_page_frame();
 		
-		if(p_addr < 0)
+		if(p_addr < static_cast<char*>(nullptr))
 		{
 			Screen::getScreen().printError("ksbrk : no free page frame available !");
-			return (char*) -1;
+			return reinterpret_cast<char *>(-1);
 		}
 		
 		pd0_add_page(kern_heap, p_addr, 0);
@@ -63,13 +70,13 @@ void* ksbrk(unsigned int n)
 void* kmalloc(unsigned long size)
 {
 	unsigned long realsize; //taille total enregirstrement
-	struct kmalloc_header *chunk, *other;
+	kmalloc_header *chunk;
 	
-	if((realsize = sizeof(struct kmalloc_header) + size) < KMALLOC_MINSIZE)
+	if((realsize = sizeof(kmalloc_header) + size) < KMALLOC_MINSIZE)
 		realsize = KMALLOC_MINSIZE;
 	
 	// Recherche d'un bloc libre de 'realsize' octets dans le heap
-	chunk = (struct kmalloc_header*) KERN_HEAP;
+	chunk = reinterpret_cast<kmalloc_header *>(KERN_HEAP);
 	
 	while(chunk->used || chunk->size < realsize)
 	{
@@ -79,16 +86,16 @@ void* kmalloc(unsigned long size)
 			asm("hlt");
 		}
 		
-		chunk = (struct kmalloc_header*) ((char*) chunk + chunk->size);
+		chunk = reinterpret_cast<kmalloc_header *>(reinterpret_cast<char *>(chunk) + chunk->size);
 		
-		if(chunk == (struct kmalloc_header*) kern_heap)
+		if(chunk == reinterpret_cast<kmalloc_header *>(kern_heap))
 		{
-			if(ksbrk((realsize / PAGESIZE) + 1) < 0)
+			if(ksbrk((realsize / PAGESIZE) + 1) < static_cast<char*>(nullptr))
 			{
 				Screen::getScreen().printError("kmalloc() : no more memory for kernel. STOP");
 				asm("hlt");
 			}
-			else if(chunk > (struct kmalloc_header*) kern_heap)
+			else if(chunk > reinterpret_cast<kmalloc_header *>(kern_heap))
 			{
 				Screen::getScreen().printError("kmalloc() : chunk after heap limit");
 				asm("hlt");
@@ -102,7 +109,8 @@ void* kmalloc(unsigned long size)
 		chunk->used = 1;
 	else
 	{
-		other = (struct kmalloc_header*) ((char*) chunk + realsize);
+		kmalloc_header *other;
+		other = reinterpret_cast<kmalloc_header *>(reinterpret_cast<char *>(chunk) + realsize);
 		other->size = chunk->size - realsize;
 		other->used = 0;
 		
@@ -110,7 +118,7 @@ void* kmalloc(unsigned long size)
 		chunk->used = 1;
 	}
 	
-	return (char*) chunk + sizeof(struct kmalloc_header);
+	return reinterpret_cast<char *>(chunk) + sizeof(kmalloc_header);
 }
 
 void* krealloc(void *ptr, unsigned long size)
@@ -123,10 +131,10 @@ void* krealloc(void *ptr, unsigned long size)
     if(size == 0)
     {
         kfree(ptr);
-        return 0;
+        return nullptr;
     }
 
-    struct kmalloc_header *chunk = (struct kmalloc_header*)((char*)ptr - sizeof(struct kmalloc_header));
+    auto *chunk = reinterpret_cast<struct kmalloc_header *>(static_cast<char *>(ptr) - sizeof(struct kmalloc_header));
 
     if(!chunk->used || !chunk->size)
         asm("hlt");
@@ -134,14 +142,14 @@ void* krealloc(void *ptr, unsigned long size)
     if(size > chunk->size)
     {
         void *newPtr = kmalloc(size);
-        memcpy((char*)newPtr, (char*)ptr, chunk->size);
+        memcpy(static_cast<char *>(newPtr), static_cast<char *>(ptr), chunk->size);
         kfree(ptr);
 
         return newPtr;
     }
     else
     {
-        struct kmalloc_header *other = (kmalloc_header*)((char*)ptr + size);
+        auto *other = reinterpret_cast<kmalloc_header *>(static_cast<char *>(ptr) + size);
         other->size = chunk->size - size;
         other->used = 0;
 
@@ -152,15 +160,15 @@ void* krealloc(void *ptr, unsigned long size)
 
 void kfree(const void *v_addr)
 {
-	struct kmalloc_header *chunk, *other;
+	kmalloc_header *other;
 	
 	//On libere le bloc
-    chunk = (struct kmalloc_header*) ((char*)v_addr - sizeof(struct kmalloc_header));
+    auto *chunk = reinterpret_cast<struct kmalloc_header *>((char *) v_addr - sizeof(struct kmalloc_header));
 	chunk->used = 0;
 		
 	//On merge le nouveau bloc libere avec le suivant ci lui aussi libre
-	while((other = (struct kmalloc_header*) ((char*) chunk + chunk->size))
-			&& other < (struct kmalloc_header*) kern_heap
+	while(((other = reinterpret_cast<kmalloc_header *>(reinterpret_cast<char *>(chunk) + chunk->size)))
+			&& other < reinterpret_cast<kmalloc_header *>(kern_heap)
 			&& other->used == 0)
 		chunk->size += other->size;
 }

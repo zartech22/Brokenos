@@ -24,8 +24,8 @@ public:
         return *IdeList;
     }
 
-    IdeCtrl() : _bus(0xFF), _device(0xFF), _function(0xFF), _primaryPorts{0xFF, 0xFF}, _secundaryPorts{0xFF, 0xFF},
-                _connetedDevice{false, false, false, false}, _drives{nullptr, nullptr, nullptr, nullptr}
+    IdeCtrl() : _bus(0xFF), _device(0xFF), _function(0xFF), _primaryPorts{0xFF, 0xFF}, _secondaryPorts{0xFF, 0xFF},
+                _connectedDevice{false, false, false, false}, _drives{nullptr, nullptr, nullptr, nullptr}
     {
     }
 
@@ -52,9 +52,9 @@ private:
 
     u8 _bus, _device, _function;
 
-    u16 _primaryPorts[2], _secundaryPorts[2];
+    u16 _primaryPorts[2], _secondaryPorts[2];
 
-    bool _connetedDevice[4];
+    bool _connectedDevice[4];
 
     IdeDrive* _drives[4];
 

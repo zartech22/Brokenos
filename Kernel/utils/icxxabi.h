@@ -1,7 +1,4 @@
-#ifndef _ICXXABI_H
-#define _ICXXABI_H
-
-#include <stdint.h>
+#pragma once
 
 #define ATEXIT_MAX_FUNCS	128
 
@@ -30,6 +27,4 @@ void __stack_chk_fail();
  
 #ifdef __cplusplus
 };
-#endif
- 
 #endif

@@ -12,9 +12,9 @@
 
 int load_task(char *fn, u32 code_size)
 {
-	struct page_directory *pd;
-	struct page_list *pglist;
-	struct page *kstack;
+	page_directory *pd;
+	page_list *pglist;
+	page *kstack;
 	
 	char *v_addr;
 	char *p_addr;
@@ -42,10 +42,10 @@ int load_task(char *fn, u32 code_size)
 	asm("mov %0, %%eax; mov %%eax, %%cr3" :: "m"(pd->base->p_addr));
 	
 	//Alloc de pages pour y copier la tache
-	pglist = (struct page_list*) kmalloc(sizeof(struct page_list));
-	pglist->page = 0;
-	pglist->next = 0;
-	pglist->prev = 0;
+	pglist = static_cast<page_list *>(kmalloc(sizeof(page_list)));
+	pglist->page = nullptr;
+	pglist->next = nullptr;
+	pglist->prev = nullptr;
 	
 	int i = 0;
 	
@@ -53,17 +53,17 @@ int load_task(char *fn, u32 code_size)
 	{
 		//Creation de l'espace d'adressage a partir de l'adresse 0x40000
 		p_addr = get_page_frame();
-		v_addr = (char*) (USER_OFFSET + i);
+		v_addr = reinterpret_cast<char *>(USER_OFFSET + i);
 		pd_add_page(v_addr, p_addr, PG_USER, pd);
 		
 		//Maj de la liste de page utilisee
-		pglist->page = (struct page*) kmalloc(sizeof(struct page));
+		pglist->page = static_cast<page *>(kmalloc(sizeof(page)));
 		pglist->page->p_addr = p_addr;
 		pglist->page->v_addr = v_addr;
 		
-		pglist->next = (struct page_list*) kmalloc(sizeof(struct page_list));
-		pglist->next->page = 0;
-		pglist->next->next = 0;
+		pglist->next = static_cast<page_list *>(kmalloc(sizeof(page_list)));
+		pglist->next->page = nullptr;
+		pglist->next->next = nullptr;
 		pglist->next->prev = pglist;
 		
 		pglist = pglist->next;
@@ -72,11 +72,11 @@ int load_task(char *fn, u32 code_size)
 	};
 	
 	//Copie du code
-	memcpy((char*) USER_OFFSET, fn, code_size);
+	memcpy(reinterpret_cast<char *>(USER_OFFSET), fn, code_size);
 	
 	//Cree la pile user
 	ustack = get_page_frame();
-	pd_add_page((char*) USER_STACK, ustack, PG_USER, pd);
+	pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
 	
 	//Cree la pile noyau
 	kstack = get_page_from_heap();
@@ -95,10 +95,10 @@ int load_task(char *fn, u32 code_size)
 	p_list[n_proc].regs.es = 0x2B;
 	p_list[n_proc].regs.fs = 0x2B;
 	p_list[n_proc].regs.gs = 0x2B;
-	p_list[n_proc].regs.cr3 = (u32) pd->base->p_addr;
+	p_list[n_proc].regs.cr3 = reinterpret_cast<u32>(pd->base->p_addr);
 	
 	p_list[n_proc].kstack.ss0 = 0x18;
-	p_list[n_proc].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
+	p_list[n_proc].kstack.esp0 = reinterpret_cast<u32>(kstack->v_addr) + PAGESIZE - 16;
 	
 	p_list[n_proc].regs.eax = 0;
     p_list[n_proc].regs.ecx = 0;
@@ -128,9 +128,9 @@ int load_task(const char *filename)
         return 0;
     }
 
-    struct page_directory *pd;
-    struct page_list *pglist;
-    struct page *kstack;
+    page_directory *pd;
+    page_list *pglist;
+    page *kstack;
 
     char *file;
     char *ustack;
@@ -156,12 +156,12 @@ int load_task(const char *filename)
 
     file = FileSystem::getFsList().at(0)->readFile(filename);
 
-    pglist = (struct page_list*)kmalloc(sizeof(struct page_list));
-    pglist->page = 0;
-    pglist->next = 0;
-    pglist->prev = 0;
+    pglist = static_cast<page_list *>(kmalloc(sizeof(page_list)));
+    pglist->page = nullptr;
+    pglist->next = nullptr;
+    pglist->prev = nullptr;
 
-    e_entry = (u32) loadElf(file, pd, pglist);
+    e_entry = loadElf(file, pd, pglist);
 
     delete file;
 
@@ -176,7 +176,7 @@ int load_task(const char *filename)
 
     /* Cree la pile utilisateur */
         ustack = get_page_frame();
-        pd_add_page((char *) USER_STACK, ustack, PG_USER, pd);
+        pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
 
         /* Cree la pile noyau */
         kstack = get_page_from_heap();
@@ -195,7 +195,7 @@ int load_task(const char *filename)
         p_list[pid].regs.es = 0x2B;
         p_list[pid].regs.fs = 0x2B;
         p_list[pid].regs.gs = 0x2B;
-        p_list[pid].regs.cr3 = (u32) pd->base->p_addr;
+        p_list[pid].regs.cr3 = reinterpret_cast<u32>(pd->base->p_addr);
 
         p_list[pid].kstack.ss0 = 0x18;
         p_list[pid].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
@@ -228,8 +228,6 @@ void test(u32 test)
 
     asm("nop;"
         "nop;");
-
-    volatile register int a = test;
 
 
     asm("nop;"
@@ -307,12 +305,12 @@ void createThread(void *fn)
 
     cli;
 
-    struct thread *th = new struct thread;
+    auto *th = new struct thread;
 
-    struct page *kstack = get_page_from_heap();
+    page *kstack = get_page_from_heap();
 
     th->regs.ss = 0x18;
-    th->regs.esp = (u32) kstack->v_addr + PAGESIZE - 16;
+    th->regs.esp = reinterpret_cast<u32>(kstack->v_addr) + PAGESIZE - 16;
 
     th->regs.eax = 0;
     th->regs.ebx = 0;
@@ -338,11 +336,11 @@ void createThread(void *fn)
 
     Screen::getScreen().printError("Test addr de ta CARROTE = %p", createThread);
 
-    asm(
+    /*asm(
     "mov %0, %%ss;"
         "mov %1, %%esp;"
     ::
-    "m"(th->regs.ss), "m"(th->regs.esp));
+    "m"(th->regs.ss), "m"(th->regs.esp));*/
 
     asm("pushl $0xDEADBEEF;"
         "pushl $0x0;"

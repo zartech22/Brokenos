@@ -6,7 +6,7 @@
 
 void checkBounds(void *ptr, unsigned int bytes)
 {
-    struct kmalloc_header *header = (struct kmalloc_header*)((char*)ptr - sizeof(struct kmalloc_header));
+    auto *header = reinterpret_cast<struct kmalloc_header *>(static_cast<char *>(ptr) - sizeof(struct kmalloc_header));
 
     if(bytes > header->size)
         int x = 3 / 0;
@@ -22,7 +22,7 @@ void* memcpy(char *dst, const char *src, unsigned int n)
 	return p;
 }
 
-void* memset(char *src, int val, unsigned int size)
+void* memset(char *src, const int val, unsigned int size)
 {
 	char *p = src;
 
@@ -53,13 +53,10 @@ int strcmp(const char *s1, const char *s2)
 		return 0;
 }
 
-void itoa(char *buf, unsigned long int n, unsigned int base)
+void itoa(char *buf, unsigned long int n, const unsigned int base)
 {
 	unsigned long int tmp;
-	int i;
-
-	tmp = n;
-	i = 0;
+	int i = 0;
 
 	do {
 		tmp = n % base;
@@ -73,6 +70,15 @@ void itoa(char *buf, unsigned long int n, unsigned int base)
 		buf[j] = buf[i];
 		buf[i] = tmp;
 	}
+}
+
+String* stoa(const unsigned long int value, const unsigned int base)
+{
+	const auto buffer = new char[512];
+
+	itoa(buffer, value, base);
+
+	return new String(buffer);
 }
 
 void strcpy(char* dest, const char* src)

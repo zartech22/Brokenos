@@ -1,24 +1,22 @@
-#define __PCI__
-
 #include <pci/pci.h>
 #include <core/io.h>
 #include <utils/lib.h>
 #include <video/Screen.h>
-#include <memory/kmalloc.h>
 #include <memory/mm.h>
 #include <pci/pciIds.h>
 #include <disk/IDE/IdeCtrl.h>
+#include <utils/String.h>
 
 
 u32 pciConfigReadDWord(u8 bus, u8 slot, u8 function, u8 offset)
 {
 	u32 address;
-	u32 lbus = (u32) bus;
-	u32 lslot = (u32) slot;
-	u32 lfunc = (u32) function;
+	u32 lbus = bus;
+	u32 lslot = slot;
+	u32 lfunc = function;
 		
-	address = (u32)((lbus << 16) | (lslot << 11) | (lfunc << 8)
-	| (offset & 0xFC) | ((u32) 0x80000000));
+	address = lbus << 16 | lslot << 11 | lfunc << 8
+	          | offset & 0xFC | 0x80000000;
 	
 	outl(0xCF8, address);
 	
@@ -28,18 +26,18 @@ u32 pciConfigReadDWord(u8 bus, u8 slot, u8 function, u8 offset)
 u16 pciConfigReadWord(u8 bus, u8 slot, u8 function, u8 offset)
 {
 	u32 address;
-	u32 lbus = (u32) bus;
-	u32 lslot = (u32) slot;
-	u32 lfunc = (u32) function;
+	u32 lbus = bus;
+	u32 lslot = slot;
+	u32 lfunc = function;
 	
 	u16 tmp;
 	
-	address = (u32)((lbus << 16) | (lslot << 11) | (lfunc << 8)
-	| (offset & 0xFC) | ((u32) 0x80000000));
+	address = lbus << 16 | lslot << 11 | lfunc << 8
+	          | offset & 0xFC | 0x80000000;
 	
 	outl(0xCF8, address);
 	
-	tmp = (u16)((inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
+	tmp = static_cast<u16>((inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
 	
 	return tmp;
 }
@@ -47,18 +45,18 @@ u16 pciConfigReadWord(u8 bus, u8 slot, u8 function, u8 offset)
 u8 pciConfigReadByte(u8 bus, u8 slot, u8 function, u8 offset)
 {
 	u32 address;
-	u32 lbus = (u32) bus;
-	u32 lslot = (u32) slot;
-	u32 lfunc = (u32) function;
+	u32 lbus = bus;
+	u32 lslot = slot;
+	u32 lfunc = function;
 	
 	u8 tmp;
 	
-	address = (u32)((lbus << 16) | (lslot << 11) | (lfunc << 8)
-	| (offset & 0xFC) | ((u32) 0x80000000));
+	address = lbus << 16 | lslot << 11 | lfunc << 8
+	          | offset & 0xFC | 0x80000000;
 	
 	outl(0xCF8, address);
 	
-	tmp = (u8)((inl(0xCFC) >> ((offset & 3) * 8)) & 0xFF);
+	tmp = static_cast<u8>((inl(0xCFC) >> ((offset & 3) * 8)) & 0xFF);
 	
 	return tmp;
 }
@@ -76,142 +74,104 @@ void pciConfigWrite(u8 bus, u8 slot, u8 function, u8 offset, u32 data)
     outl(0xCFC, data);
 }
 
-inline u16 pciCheckVendor(u8 bus, u8 slot)
+inline u16 pciCheckVendor(const u8 bus, const u8 slot)
 {	
 	return pciConfigReadWord(bus, slot, 0, 0);
 }
 
-const char* pciGetVendorName(u16 vendor)
+String* pciGetVendorName(const u16 vendor)
 {
-	char *name = new char[10];
-	memset(name, '\0', 10);
-	
 	switch(vendor)
 	{
 		case Intel:
-			strcpy(name, "Intel");
-			break;
+			return new String("Intel");
 		case Realtec:
-			strcpy(name, "Realtek");
-			break;
+			return new String("Realtek");
 		case NVidia:
-			strcpy(name, "NVidia");
-			break;
+			return new String("NVidia");
 		case Oracle:
-			strcpy(name, "Oracle");
-			break;
+			return new String("Oracle");
 		case AMD:
-			strcpy(name, "AMD");
-			break;
+			return new String("AMD");
 		case APPLE:
-			strcpy(name, "Apple");
-            break;
+			return new String("Apple");
         case VmWare:
-            strcpy(name, "VmWare");
-            break;
+            return new String("VmWare");
         case Ensoniq:
-            strcpy(name, "Ensoniq");
-            break;
+            return new String("Ensoniq");
         case Mylex:
-            strcpy(name, "Mylex");
-            break;
+            return new String("Mylex");
 		default:
-			itoa(name, vendor, 16);
-			break;
+			return stoa(vendor, 16);
 	}
-	
-	return name;
 }
 
-const char* pciGetClassCodeName(u8 code)
+String* pciGetClassCodeName(u8 code)
 {
-    char *name = new char[35];
-	memset(name, '\0', 35);
-	
 	switch(code)
 	{
 		case MassStorageCtrl:
-			strcpy(name, "Mass Storage Controller");
-			break;
+			return new String("Mass Storage Controller");
 		case NetworkCtrl:
-			strcpy(name, "Network Controller");
-			break;
+			return new String("Network Controller");
 		case DisplayCtrl:
-			strcpy(name, "Display Controller");
-			break;
+			return new String("Display Controller");
 		case MultimediaCtrl:
-			strcpy(name, "Multimedia Controller");
-			break;
+			return new String("Multimedia Controller");
 		case MemoryCtrl:
-			strcpy(name, "Memory Controller");
-			break;
+			return new String("Memory Controller");
 		case BridgeCtrl:
-			strcpy(name, "Bridge Controller");
-			break;
+			return new String("Bridge Controller");
 		case SimpleCommCtrl:
-			strcpy(name, "Simple Communication Controler");
-			break;
+			return new String("Simple Communication Controler");
 		case BaseSystemPeriph:
-			strcpy(name, "Base System Peripherals");
-			break;
+			return new String("Base System Peripherals");
 		case InputDevices:
-			strcpy(name, "Input Devices");
-			break;
+			return new String("Input Devices");
 		case DockingStations:
-			strcpy(name, "Docking Stations");
-			break;
+			return new String("Docking Stations");
 		case Processors:
-			strcpy(name, "Processor");
-			break;
+			return new String("Processor");
 		case SerialBusCtrl:
-			strcpy(name, "Serial Bus Controller");
-			break;
+			return new String("Serial Bus Controller");
 		case WirelessCtrl:
-			strcpy(name, "Wireless Controller");
-			break;
+			return new String("Wireless Controller");
 		case IntelligentIOCtrl:
-			strcpy(name, "Intelligent I/O Controller");
-			break;
+			return new String("Intelligent I/O Controller");
 		case SatelliteCommCtrl:
-			strcpy(name, "Satellite Communication Controller");
-			break;
+			return new String("Satellite Communication Controller");
 		case EncDecCtrl:
-			strcpy(name, "Encryption/Decryption Controller");
-			break;
+			return new String("Encryption/Decryption Controller");
 		case DataAcqSignalProces:
-			strcpy(name, "Data Acquisition/Signal process");
-			break;
+			return new String("Data Acquisition/Signal process");
 		default:
-			itoa(name, code, 16);
-			break;
+			return stoa(code, 16);
 	}
-	
-	return name;
 }
 
-void displayDevice(u16 vendor, u8 classCode, u8 subClassCode, u16 devId)
+void displayDevice(const u16 vendor, const u8 classCode, const u8 subClassCode, const u16 devId)
 {
-	const char *vendorName = pciGetVendorName(vendor);
-	const char *className = pciGetClassCodeName(classCode);
+	String *vendorName = pciGetVendorName(vendor);
+	String *className = pciGetClassCodeName(classCode);
 	
-	sScreen.printk("\t%s, Class : %s, SubClass : %x, DevId : %x\n", vendorName,
+	sScreen.printk("\t%S, Class : %S, SubClass : %x, DevId : %x\n", vendorName,
 				className, subClassCode, devId);
 	
-	delete[] vendorName;
-	delete[] className;
+	delete vendorName;
+	delete className;
 }
 
-void checkFunction(u8 bus, u8 device, u8 function)
+void checkFunction(const u8 bus, const u8 device, const u8 function)
 {
-	u8 classCode = pciConfigReadByte(bus, device, function, 0x0B);
-	u8 subClass = pciConfigReadByte(bus, device, function, 0x0A);
-	
-	u16 vendor = pciConfigReadWord(bus, device, function, 0x00);
-	u16 devId = pciConfigReadWord(bus, device, function, 0x02);
+	const u8 classCode = pciConfigReadByte(bus, device, function, 0x0B);
+	const u8 subClass = pciConfigReadByte(bus, device, function, 0x0A);
+
+	const u16 vendor = pciConfigReadWord(bus, device, function, 0x00);
+	const u16 devId = pciConfigReadWord(bus, device, function, 0x02);
 	
 	if((classCode == BridgeCtrl) && (subClass == 0x04))
 	{
-		u8 secBus = pciConfigReadByte(bus, device, function, 0x19);
+		const u8 secBus = pciConfigReadByte(bus, device, function, 0x19);
 		checkBus(secBus);
 	}
 	
@@ -226,11 +186,11 @@ void checkFunction(u8 bus, u8 device, u8 function)
             sScreen.println("UHCI Controller");
         else if(progIf == 0x10)
         {
-            u32 bar0 = pciConfigReadDWord(bus, device, function, 0x10);
-            u8 type = bar0 & 0x6;
-            char *p = reinterpret_cast<char*>(0xFFFFFFF0 & bar0);
+	        const u32 bar0 = pciConfigReadDWord(bus, device, function, 0x10);
+	        const u8 type = bar0 & 0x6;
+	        auto p = reinterpret_cast<char*>(0xFFFFFFF0 & bar0);
 
-            pciConfigWrite(bus, device, function, 0x10, (u32)~0);
+            pciConfigWrite(bus, device, function, 0x10, static_cast<u32>(~0));
 
             u32 res = pciConfigReadDWord(bus, device, function, 0x10);
             res &= 0xFFFFFFF0;
@@ -241,10 +201,10 @@ void checkFunction(u8 bus, u8 device, u8 function)
 
             sScreen.println("OHCI Controller. type = %b, Memmory map %p - %p", type, p, p + res);
 
-            struct page *pages = get_page_from_heap(p, p + res);
-            u32 *mem = (u32*)pages->v_addr;
+	        const page *pages = get_page_from_heap(p, p + res);
+	        const auto mem = reinterpret_cast<u32 *>(pages->v_addr);
 
-            u8 rev = (*mem & 0xFF);
+	        const u8 rev = (*mem & 0xFF);
 
             sScreen.printError("OHCI Version : %d.%d", rev >> 4, rev & 0xF);
 
@@ -266,7 +226,7 @@ void checkFunction(u8 bus, u8 device, u8 function)
 	    IdeCtrl::addController(bus, device, function);
 }
 
-void checkDevice(u8 bus, u8 device)
+void checkDevice(const u8 bus, const u8 device)
 {
 	u16 vendor = pciConfigReadWord(bus, device, 0, 0);
 	
@@ -275,13 +235,15 @@ void checkDevice(u8 bus, u8 device)
 	checkFunction(bus, device, 0);
 	
 	u8 headerType = pciConfigReadByte(bus, device, 0, 0x0E);
-	
-	for(u8 function = 1; function < 8; function++)
-		if(pciConfigReadWord(bus, device, function, 0x00) != 0xFFFF)
-			checkFunction(bus, device, function);
+
+	if((headerType & 0x80) != 0x00) {
+		for(u8 function = 1; function < 8; function++)
+			if(pciConfigReadWord(bus, device, function, 0x00) != 0xFFFF)
+				checkFunction(bus, device, function);
+	}
 }
 
-void checkBus(u8 bus)
+void checkBus(const u8 bus)
 {
 	for(u8 device = 0; device < 32; device++)
 		checkDevice(bus, device);

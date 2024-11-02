@@ -1,5 +1,4 @@
-#ifndef _LIB_
-#define _LIB_
+#pragma once
 
 #ifdef __cplusplus
 	extern "C" {
@@ -22,4 +21,4 @@ void checkBounds(void *ptr, unsigned int bytes);
 class String;
 inline bool operator==(const String &str1, const String &str2);
 
-#endif
+String* stoa(unsigned long int value, unsigned int base);

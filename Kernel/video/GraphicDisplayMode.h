@@ -1,19 +1,15 @@
-#ifndef GRAPHICDISPLAYMODE_H
-#define GRAPHICDISPLAYMODE_H
+#pragma once
 
 #include <video/Screen.h>
 #include <utils/types.h>
 #include <video/font.h>
 #include <utils/lib.h>
-#include <memory/mm.h>
 #include <core/io.h>
 
-#include <utils/lib.h>
-
-class GraphicDisplayMode : public Screen
+class GraphicDisplayMode final : public Screen
 {
 public:
-    virtual void putcar(uchar c) override
+    void putcar(const uchar c) override
     {
         if(c == 10) //saut de ligne (CR-NL)
         {
@@ -36,7 +32,7 @@ public:
             _pixel -= _posX * _bitsPerPixel;
         else
         {
-            uchar *letter = font8x8_basic[c];
+            const uchar *letter = font8x8_basic[c];
             uchar *tmp = _frameBuffer + _posY * _bytePerLine * 8 + _posX * _bitsPerPixel;
             uchar *tmp_buffer = _buffer + _posY * _bytePerLine * 8 + _posX * _bitsPerPixel;
 
@@ -51,16 +47,16 @@ public:
                     {
                         for(u8 i = 0; i < 3; ++i)
                         {
-                            tmp_buffer[i] = (get32BitsColor((Color)(getColor() & 0xF)) >> (8 * i)) & 0xFF;
-                            tmp[i] = (get32BitsColor((Color)(getColor() & 0xF)) >> (8 * i)) & 0xFF;
+                            tmp_buffer[i] = (get32BitsColor(static_cast<Color>(getColor() & 0xF)) >> (8 * i)) & 0xFF;
+                            tmp[i] = (get32BitsColor(static_cast<Color>(getColor() & 0xF)) >> (8 * i)) & 0xFF;
                         }
                     }
                     else
                     {
                         for(u8 i = 0; i < 3; ++i)
                         {
-                            tmp_buffer[i] = (get32BitsColor((Color)(getColor() >> 4)) >> (8 * i)) & 0xFF;
-                            tmp[i] = (get32BitsColor((Color)(getColor() >> 4)) >> (8 * i)) & 0xFF;
+                            tmp_buffer[i] = (get32BitsColor(static_cast<Color>(getColor() >> 4)) >> (8 * i)) & 0xFF;
+                            tmp[i] = (get32BitsColor(static_cast<Color>(getColor() >> 4)) >> (8 * i)) & 0xFF;
                         }
                     }
 
@@ -80,7 +76,7 @@ public:
             scrollup(_posY - _maxY);
     }
 
-    virtual void scrollup(u8 n) override
+    void scrollup(u8 n) override
     {
         unsigned int const videoEnd = ((_maxY + 1) * _bytePerLine * 8);
         uchar *offset = _buffer + n * _bytePerLine * 8;
@@ -128,63 +124,63 @@ public:
         }
 
         checkBounds(_buffer, (_buffer + videoEnd - offset));
-        memcpy((char*)_buffer, (char*)offset, (_buffer + videoEnd - offset));
-        memset((char*)(_buffer + videoEnd - (n * _bytePerLine * 8)), 0, _bytePerLine * 8 * n);
+        memcpy(reinterpret_cast<char *>(_buffer), reinterpret_cast<char *>(offset), (_buffer + videoEnd - offset));
+        memset(reinterpret_cast<char *>(_buffer + videoEnd - (n * _bytePerLine * 8)), 0, _bytePerLine * 8 * n);
 
         _posY -= n;
     }
 
-    Color_32 get32BitsColor(Color color)
+    static Color_32 get32BitsColor(const Color color)
     {
         switch(color)
         {
-        case Color::Black:
-            return Color_32::Black32;
-        case Color::Blue:
-            return Color_32::Blue32;
-        case Color::Green:
-            return Color_32::Green32;
-        case Color::Pink:
-            return Color_32::Pink32;
-        case Color::Red:
-            return Color_32::Red32;
-        case Color::SoftBlue:
-            return Color_32::SoftBlue32;
-        case Color::White:
-            return Color_32::White32;
-        case Color::Yellow:
-            return Color_32::Yellow32;
+        case Black:
+            return Black32;
+        case Blue:
+            return Blue32;
+        case Green:
+            return Green32;
+        case Pink:
+            return Pink32;
+        case Red:
+            return Red32;
+        case SoftBlue:
+            return SoftBlue32;
+        case White:
+            return White32;
+        case Yellow:
+            return Yellow32;
         default:
-            return Color_32::Orange32;
+            return Orange32;
         }
     }
 
-    inline virtual void clean() override { memset((char*)_frameBuffer, 0, (_maxY + 1) * _bytePerLine * 8); memset((char*)_buffer, 0, (_maxY + 1) * _bytePerLine * 8); }
+    void clean() override { memset(reinterpret_cast<char *>(_frameBuffer), 0, (_maxY + 1) * _bytePerLine * 8); memset(reinterpret_cast<char *>(_buffer), 0, (_maxY + 1) * _bytePerLine * 8); }
 
 private:
     friend class Screen;
-    friend int main(struct mb_partial_info*);
+    friend int main(mb_partial_info*);
 
-    GraphicDisplayMode(VbeModeInfo *info, char *framebuffer) : Screen(), _frameBuffer((uchar*)framebuffer), _pixel(_frameBuffer), _bytePerLine(info->BytesPerScanLine),
-        _bitsPerPixel(info->BitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[info->YResolution * info->BytesPerScanLine])
+    GraphicDisplayMode(const VbeModeInfo *info, char *framebuffer) : _buffer(new uchar[info->YResolution * info->BytesPerScanLine]), _frameBuffer(reinterpret_cast<uchar *>(framebuffer)), _pixel(_frameBuffer),
+                                                                     _bytePerLine(info->BytesPerScanLine), _bitsPerPixel(info->BitsPerPixel), _pixelWidth(_bitsPerPixel / 8)
     {
         _maxX = info->XResolution / 8 - 1;
         _maxY = info->YResolution / 8 - 1;
 
         checkBounds(_buffer, info->YResolution * _bytePerLine);
-        memset((char*)_buffer, 0, info->YResolution * _bytePerLine);
+        memset(reinterpret_cast<char *>(_buffer), 0, info->YResolution * _bytePerLine);
 
         printDebug("[%s] Framebuffer : %p", __FUNCTION__, framebuffer);
     }
 
-    GraphicDisplayMode(char *framebuffer, u32 width, u32 height, u8 bitsPerPixel, u32 bytePerScanline) : _frameBuffer((uchar*)framebuffer), _bytePerLine(bytePerScanline),
-        _bitsPerPixel(bitsPerPixel), _pixelWidth(_bitsPerPixel / 8), _buffer(new uchar[height * bytePerScanline]), _pixel(_frameBuffer)
+    GraphicDisplayMode(char *framebuffer, const u32 width, const u32 height, const u8 bitsPerPixel, const u32 bytePerScanline) : _buffer(new uchar[height * bytePerScanline]), _frameBuffer(reinterpret_cast<uchar *>(framebuffer)),
+                                                                                                                                 _pixel(_frameBuffer), _bytePerLine(bytePerScanline), _bitsPerPixel(bitsPerPixel), _pixelWidth(_bitsPerPixel / 8)
     {
         _maxX = width / 8 - 1;
         _maxY = height / 8 - 1;
 
         checkBounds(_buffer, height * _bytePerLine);
-        memset((char*)_buffer, 0, height* _bytePerLine);
+        memset(reinterpret_cast<char *>(_buffer), 0, height* _bytePerLine);
 
         printDebug("[%s] Framebuffer : %p", __FUNCTION__, framebuffer);
     }
@@ -196,5 +192,3 @@ private:
     u8  _bitsPerPixel;
     u8  _pixelWidth;
 };
-
-#endif // GRAPHICDISPLAYMODE_H

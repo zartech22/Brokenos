@@ -1,7 +1,6 @@
-#ifndef _TYPES
-#define _TYPES
+#pragma once
 
-#include <stddef.h>
+#include <cstddef>
 
 typedef unsigned char   u8;
 typedef unsigned short  u16;
@@ -116,5 +115,3 @@ struct mmapInfo
     u32 length_high;
     u8  type;
 } __attribute__((packed)) ;
-
-#endif

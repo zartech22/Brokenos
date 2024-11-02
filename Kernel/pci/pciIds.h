@@ -1,3 +1,5 @@
+#pragma once
+
 enum VendorsId
 {
 	Intel 	=	0x8086,

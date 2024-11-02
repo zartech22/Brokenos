@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-m32 -std=c++11 -g -c -o0 -fno-exceptions -nostdlib -ffreestanding -fno-rtti -I..
+CFLAGS=-m32 -std=c++17 -g -c -o0 -fno-exceptions -nostdlib -ffreestanding -fno-rtti -I..
 
 LD=ld
 LDFLAGS=-m elf_i386 -T build/linker.ld

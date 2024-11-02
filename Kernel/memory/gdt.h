@@ -42,15 +42,15 @@ struct tss
 	u16 debug_flag, io_map;
 } __attribute__ ((packed));
 
-void init_gdt_desc(u32, u32, u8, u8, struct gdtdesc*);
+void init_gdt_desc(u32, u32, u8, u8, gdtdesc*);
 void init_gdt();
 
 #ifdef __GDT__
-	struct gdtdesc kgdt[GDTSIZE];
-	struct gdtr kgdtr;
-	struct tss default_tss;
+	gdtdesc kgdt[GDTSIZE];
+	gdtr kgdtr;
+	tss default_tss;
 #else
-	extern struct gdtdesc kgdt[];
-	extern struct gdtr kgdtr;
-	extern struct tss default_tss;
+	extern gdtdesc kgdt[];
+	extern gdtr kgdtr;
+	extern tss default_tss;
 #endif

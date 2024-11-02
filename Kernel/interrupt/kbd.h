@@ -1,7 +1,6 @@
-#ifndef _KBD_
-#define _KBD_
+#pragma once
 
-uchar kbdmap[] = {
+inline uchar kbdmap[] = {
 	0x1B, 0x1B, 0x1B, 0x1B,	/*      esc     (0x01)  */
 	'1', '!', '1', '1',
 	'2', '@', '2', '2',
@@ -100,5 +99,3 @@ uchar kbdmap[] = {
 	0xFF, 0xFF, 0xFF, 0xFF,	/*      (0x60)  */
 	0xFF, 0xFF, 0xFF, 0xFF	/*      (0x61)  */
 };
-
-#endif

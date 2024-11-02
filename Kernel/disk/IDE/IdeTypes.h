@@ -13,7 +13,7 @@ enum BusRole
     SecundaryBus
 };
 
-enum ATA_Command
+enum class ATA_Command
 {
     ATA_READ			= 0x20,
     ATA_WRITE			= 0x30,
@@ -26,6 +26,7 @@ enum ATA_Registers : u16
 {
     ATA_DATA		= 0x00,
 
+    ATA_ERROR       = 0x01,
     ATA_FEATURES	= 0x01,
 
     ATA_SECT_COUNT	= 0x02,
@@ -38,6 +39,38 @@ enum ATA_Registers : u16
 
     ATA_COMMAND		= 0x07,
     ATA_STATUS		= 0x07
+};
+
+class ATA_Status {
+public:
+    enum StatusField : u8 {
+        ERR = 0x01,
+        IDX = 0x02,
+        CORR = 0x04,
+        DRQ = 0x08,
+        SRV = 0x10,
+        DF = 0x20,
+        RDY = 0x40,
+        BSY = 0x80
+    };
+
+    ATA_Status() : _status(0) {}
+    explicit ATA_Status(const u8 status) : _status(status) {}
+
+    [[nodiscard]] u8 getByte() const {
+        return _status;
+    }
+
+    bool operator[](const StatusField field) const {
+        return _status & field;
+    }
+
+    explicit operator bool() const {
+        return _status;
+    }
+
+private:
+    u8 _status;
 };
 
 struct Partition

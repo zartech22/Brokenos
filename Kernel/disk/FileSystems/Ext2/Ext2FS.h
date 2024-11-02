@@ -1,5 +1,4 @@
-#ifndef EXT2FS_H
-#define EXT2FS_H
+#pragma once
 
 #include <utils/types.h>
 #include <disk/FileSystems/FileSystem.h>
@@ -141,41 +140,41 @@ struct directory_entry
 struct filePrivateData
 {
 	u32					inum;
-	struct ext2_inode*	inode;
+	ext2_inode*	inode;
 };
 
 struct open_file
 {
     struct file*		file;
 	u32					ptr;
-	struct open_file*	next;
+	open_file*	next;
 };
 
 
-class Ext2FS : public FileSystem
+class Ext2FS final : public FileSystem
 {
     public:
-        Ext2FS(struct Partition&, IdeDrive&);
+        Ext2FS(const Partition&, IdeDrive&);
         ~Ext2FS() override { Screen::getScreen().printError("Fin Ext2FS"); }
 
         explicit Ext2FS(const Ext2FS &o) : FileSystem(*this) { Screen::getScreen().printError("Copie"); }
 
-        virtual char* readFile(const char *path) override;
-        virtual char* readFile(struct file*) override;
+        char* readFile(const char *path) override;
+        char* readFile(file*) override;
 
-        virtual struct file* getFile(const char *name) override;
+        file* getFile(const char *name) override;
 
-        struct ext2_inode* readInode(int num);
+        ext2_inode* readInode(int num) const;
 
-        virtual bool isDirectory(const char *path) override { return isDirectory(getFile(path)); }
-        virtual bool isDirectory(struct file *f) override;
+        bool isDirectory(const char *path) override { return isDirectory(getFile(path)); }
+        bool isDirectory(file *f) override;
 
-        virtual struct file* getDirEntries(struct file*) override;
-        virtual struct file* getDirEntries(const char *path) override { return getDirEntries(getFile(path)); }
+        file* getDirEntries(file*) override;
+        file* getDirEntries(const char *path) override { return getDirEntries(getFile(path)); }
 
         static bool isExt2FS(char *data);
 
-        static Ext2FS* initializeFS(struct Partition &part, IdeDrive &drive)
+        static Ext2FS* initializeFS(Partition &part, IdeDrive &drive)
         {
             return new Ext2FS(part, drive);
         }
@@ -184,16 +183,14 @@ class Ext2FS : public FileSystem
 		u32 _blockSize;
 		u16	_groupNumber;
 
-        struct ext2_super_block *_sb;
-		struct ext2_group_desc *_groups;
+        ext2_super_block *_sb;
+		ext2_group_desc *_groups;
 
         inline void readSuperBlock();
 		void readGroupBlock();
 
-        virtual void initFsRoot() override;
+        void initFsRoot() override;
 
-        struct file* isCachedLeaf(struct file*, char*);
+        static file* isCachedLeaf(const file*, const char*);
 
 };
-
-#endif // EXT2FS_H
