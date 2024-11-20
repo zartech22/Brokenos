@@ -2,7 +2,7 @@
 #include <memory/gdt.h>
 #include <core/process.h>
 
-void switch_to_task(int n, int mode)
+void  switch_to_task(int n, int mode)
 {
 	u32 kesp, eflags;
 	u16 kss, ss, cs;

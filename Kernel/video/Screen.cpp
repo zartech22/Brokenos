@@ -31,18 +31,15 @@ void Screen::initScreen(const mb_partial_info *info)
 
         if(vbeInfo->ModeAttributes & GRAPHIC_MODE_ATTR)
         {
-            char *end = reinterpret_cast<char *>(vbeInfo->PhysBasePtr) + vbeInfo->YResolution * vbeInfo->BytesPerScanLine;
-
-            //init_graphicMode_video_memory((char*)info->PhysBasePtr, end);
+	        const char *end = reinterpret_cast<char *>(vbeInfo->PhysBasePtr) + vbeInfo->YResolution * vbeInfo->BytesPerScanLine;
 
             const page *framebuffer = get_page_from_heap(reinterpret_cast<char *>(vbeInfo->PhysBasePtr), end);
 
             _inst = new GraphicDisplayMode(vbeInfo, framebuffer->v_addr);
 
-            //_inst->printError("Graphic virtual memory starts : %p - ends %p, page : %d", framebuffer->v_addr, framebuffer->v_addr + info->YResolution * info->BytesPerScanLine, (info->YResolution * info->BytesPerScanLine) / PAGESIZE);
-
             _inst->clean();
-            _inst->printError("[%s] Framebuffer : %p", __FUNCTION__, framebuffer->v_addr);
+            _inst->printError("[%s] Framebuffer : %p | %d", __FUNCTION__, framebuffer->v_addr,
+                              reinterpret_cast<GraphicDisplayMode *>(_inst)->_font->getGlyph('c').height);
             delete framebuffer;
         }
         else

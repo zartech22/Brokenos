@@ -15,7 +15,7 @@ void isr_default_int() {
 }
 
 void isr_default_exc() {
-    Screen::getScreen().println("Division by 0 !");
+    Screen::getScreen().printError("Division by 0 !");
 }
 
 void isr_clock_int() {
@@ -128,6 +128,8 @@ void isr_kbd_int() {
     i = inb(0x60);
     i--;
 
+    sScreen.printError("%x", i);
+
     if (i < 0x80) {
         switch (i) {
             case 0x29:
@@ -143,7 +145,9 @@ void isr_kbd_int() {
                 alt_enable = 1;
                 break;
             default:
-                Screen::getScreen().putcar(kbdmap[i * 4 + (lshift_enable || rshift_enable)]);
+                sScreen.printInfo("%x", i * 4 + (lshift_enable || rshift_enable));
+                sScreen.printInfo("%x", kbdmap[i * 4 + (lshift_enable || rshift_enable)]);
+                sScreen.putcar(kbdmap[i * 4 + (lshift_enable || rshift_enable)]);
         }
     } else {
         i -= 0x80;

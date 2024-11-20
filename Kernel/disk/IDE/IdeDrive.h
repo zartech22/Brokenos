@@ -9,7 +9,7 @@ class Partitions;
 class IdeDrive
 {
 public:
-    IdeDrive() : _part(nullptr), _isConnected(false), _modelName{}, _regPorts(0), _controlPort(0), _role(Master)
+    IdeDrive() : _isConnected(false), _modelName{}, _regPorts(0), _controlPort(0), _role(Master)
     {
         memset(_modelName, '\0', 41);
         strcpy(_modelName, "Uninitialized IDE Device");

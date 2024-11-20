@@ -47,19 +47,19 @@ void IdeCtrl::displayModelNames()
 void IdeCtrl::displayTree()
 {
     sScreen.println("Ide controller: PCI(%u, %u, %u)", _bus, _device, _function);
-    sScreen.putcar(0xB3);
-    sScreen.putcar(0x0A);
+    sScreen.putcar(0xC8);
+    sScreen.putcar('\n');
 
-    sScreen.putcar(0xC3);
+    sScreen.putcar(0xC6);
     sScreen.printk(" Primary master : %s\n", _drives[0]->getModelName());
 
-    sScreen.putcar(0xC3);
+    sScreen.putcar(0xC6);
     sScreen.printk(" Primary slave : %s\n", _drives[1]->getModelName());
 
-    sScreen.putcar(0xC3);
+    sScreen.putcar(0xC6);
     sScreen.printk(" Secundary master : %s\n", _drives[2]->getModelName());
 
-    sScreen.putcar(0xC0);
+    sScreen.putcar(0xC4);
     sScreen.printk(" Secundary slave : %s\n", _drives[3]->getModelName());
 }
 

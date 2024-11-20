@@ -2,12 +2,10 @@
 
 #include <utils/String.h>
 
-class CPU
-{
-public:
-    static String getVendor()
+namespace kernel::core::cpu {
+    inline String getVendor()
     {
-        auto vendor = static_cast<u32 *>(kmalloc(13));
+        auto vendor = new u32[13];
 
         asm ("xor %%eax, %%eax;"
                     "cpuid;"
@@ -17,14 +15,14 @@ public:
 
         String res(reinterpret_cast<char *>(vendor));
 
-        kfree(vendor);
+        delete vendor;
 
         return res;
     }
 
-    static String getBrand()
+    inline String getBrand()
     {
-        auto brand = static_cast<u32 *>(kmalloc(49));
+        auto brand = new u32[49];
 
         asm ("cpuid;" : "=a" (*brand), "=b" (*(brand + 1)), "=c" (*(brand + 2)), "=d" (*(brand + 3)) : "a" (0x80000002));
         asm ("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));
@@ -34,8 +32,8 @@ public:
 
         String res(reinterpret_cast<char *>(brand));
 
-        kfree(brand);
+        delete brand;
 
         return res;
     }
-};
+}

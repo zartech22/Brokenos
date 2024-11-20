@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdarg>
 #include <utils/types.h>
+#include <core/kernel.h>
+#include <cstdarg>
 
 #define sScreen Screen::getScreen()
 
@@ -82,9 +83,9 @@ public :
     void showTic();
 
 private :
-    friend int main(mb_partial_info *);
+    friend int kernel::main(mb_partial_info *);
 
-    explicit Screen(VbeModeInfo *) : _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0), _posX(0),
+    explicit Screen(VbeModeInfo *) : _colors(SoftBlue), _showCursor(false), _isLoading(false), _ticNbr(0), _posX(0),
                                      _posY(0),
                                      _maxX(0), _maxY(0) { _inst = this; }
 
@@ -107,7 +108,7 @@ private :
     void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
 
 protected:
-    Screen() : _colors(0x0E), _showCursor(false), _isLoading(false), _ticNbr(0), _posX(0), _posY(0), _maxX(0),
+    Screen() : _colors(SoftBlue), _showCursor(false), _isLoading(false), _ticNbr(0), _posX(0), _posY(0), _maxX(0),
                _maxY(0) { _inst = this; }
 
     virtual void scrollup(u8);

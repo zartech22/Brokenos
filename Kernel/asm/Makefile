@@ -1,5 +1,5 @@
 ASM=nasm
-FLAGS=-g -f elf -o
+FLAGS=-f elf -o
 
 SRC= $(wildcard *.asm)
 OBJ= $(SRC:.asm=.o)
