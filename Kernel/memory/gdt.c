@@ -6,7 +6,7 @@
 #include "gdt.h"
 
 
-void init_gdt_desc(const u32 base, const u32 limite, const u8 acces, const u8 other, gdtdesc *desc)
+void init_gdt_desc(const uint32_t base, const uint32_t limite, const uint8_t acces, const uint8_t other, gdtdesc *desc)
 {
 	desc->lim0_15 = (limite & 0xffff);
 	desc->base0_15 = (base & 0xffff);
@@ -35,7 +35,7 @@ void init_gdt()
     init_gdt_desc(0x0, 0xFFFFF, 0xF3, 0x0D, &kgdt[5]);	// Data
     init_gdt_desc(0x0, 0x0, 0xF7, 0x0D, &kgdt[6]);      // Stack
 	
-    init_gdt_desc(reinterpret_cast<u32>(&default_tss), 0x67, 0xE9, 0x00, &kgdt[7]);	// TSS
+    init_gdt_desc(reinterpret_cast<uint32_t>(&default_tss), 0x67, 0xE9, 0x00, &kgdt[7]);	// TSS
 	
 	kgdtr.limite = GDTSIZE * 8;
 	kgdtr.base = GDTBASE;

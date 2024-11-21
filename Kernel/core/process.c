@@ -10,7 +10,7 @@
 #define __PLIST__
 #include "process.h"
 
-int load_task(char *fn, u32 code_size)
+int load_task(char *fn, uint32_t code_size)
 {
 	page_directory *pd;
 	page_list *pglist;
@@ -95,10 +95,10 @@ int load_task(char *fn, u32 code_size)
 	p_list[n_proc].regs.es = 0x2B;
 	p_list[n_proc].regs.fs = 0x2B;
 	p_list[n_proc].regs.gs = 0x2B;
-	p_list[n_proc].regs.cr3 = reinterpret_cast<u32>(pd->base->p_addr);
+	p_list[n_proc].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
 	
 	p_list[n_proc].kstack.ss0 = 0x18;
-	p_list[n_proc].kstack.esp0 = reinterpret_cast<u32>(kstack->v_addr) + PAGESIZE - 16;
+	p_list[n_proc].kstack.esp0 = reinterpret_cast<uint32_t>(kstack->v_addr) + PAGESIZE - 16;
 	
 	p_list[n_proc].regs.eax = 0;
     p_list[n_proc].regs.ecx = 0;
@@ -134,7 +134,7 @@ int load_task(const char *filename)
 
     char *file;
     char *ustack;
-    u32 e_entry;
+    uint32_t e_entry;
 
     int pid;
 
@@ -195,10 +195,10 @@ int load_task(const char *filename)
         p_list[pid].regs.es = 0x2B;
         p_list[pid].regs.fs = 0x2B;
         p_list[pid].regs.gs = 0x2B;
-        p_list[pid].regs.cr3 = reinterpret_cast<u32>(pd->base->p_addr);
+        p_list[pid].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
 
         p_list[pid].kstack.ss0 = 0x18;
-        p_list[pid].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
+        p_list[pid].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
 
         p_list[pid].regs.eax = 0;
         p_list[pid].regs.ecx = 0;
@@ -220,7 +220,7 @@ int load_task(const char *filename)
         return pid;
 }
 
-void test(u32 test)
+void test(uint32_t test)
 {
     //Screen::getScreen().printDebug("Salut !");
     //Screen::getScreen().printError("Test ! %p", function);
@@ -275,10 +275,10 @@ void createThread(void *fn)
 
 //    /* Initialisation des registres */
 //    p_list[n_proc].regs.ss = 0x18;
-//    p_list[n_proc].regs.esp = (u32)kstack->v_addr + PAGESIZE - 16;
+//    p_list[n_proc].regs.esp = (uint32_t)kstack->v_addr + PAGESIZE - 16;
 //    p_list[n_proc].regs.eflags = 0x0;
 //    p_list[n_proc].regs.cs = 0x08;
-//    p_list[n_proc].regs.eip = (u32)&test;
+//    p_list[n_proc].regs.eip = (uint32_t)&test;
 //    p_list[n_proc].regs.ds = 0x10;
 //    p_list[n_proc].regs.es = 0x10;
 //    p_list[n_proc].regs.fs = 0x10;
@@ -286,7 +286,7 @@ void createThread(void *fn)
 //    p_list[n_proc].regs.cr3 = 0;
 
 //    p_list[n_proc].kstack.ss0 = 0x18;
-//    p_list[n_proc].kstack.esp0 = (u32) kstack->v_addr + PAGESIZE - 16;
+//    p_list[n_proc].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
 
 //    p_list[n_proc].regs.eax = 0;
 //    p_list[n_proc].regs.ecx = 0;
@@ -310,7 +310,7 @@ void createThread(void *fn)
     page *kstack = get_page_from_heap();
 
     th->regs.ss = 0x18;
-    th->regs.esp = reinterpret_cast<u32>(kstack->v_addr) + PAGESIZE - 16;
+    th->regs.esp = reinterpret_cast<uint32_t>(kstack->v_addr) + PAGESIZE - 16;
 
     th->regs.eax = 0;
     th->regs.ebx = 0;
@@ -330,7 +330,7 @@ void createThread(void *fn)
 
     th->state = 0;
 
-    void (*testFn)(u32) = &test;
+    void (*testFn)(uint32_t) = &test;
 
     asm("mov %0, %%eax;" :: "m"(th->regs.esp));
 

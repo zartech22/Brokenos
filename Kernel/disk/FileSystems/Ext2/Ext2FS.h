@@ -40,113 +40,113 @@
 
 struct ext2_super_block
 {
-    u32     inodes_count;
-    u32     block_count;
-    u32     reserved_block_count;
-    u32     free_block_count;
-    u32     free_inodes_count;
-    u32     first_data_block;
+    uint32_t     inodes_count;
+    uint32_t     block_count;
+    uint32_t     reserved_block_count;
+    uint32_t     free_block_count;
+    uint32_t     free_inodes_count;
+    uint32_t     first_data_block;
 
-    u32     log_block_size;
-    u32     log_fragment_size;
-    u32     blocks_per_group;
-    u32     frags_per_group;
-    u32     inodes_per_group;
-    u32     mount_time; // Last time has been mounted
-    u32     write_time; // Last time has been written
+    uint32_t     log_block_size;
+    uint32_t     log_fragment_size;
+    uint32_t     blocks_per_group;
+    uint32_t     frags_per_group;
+    uint32_t     inodes_per_group;
+    uint32_t     mount_time; // Last time has been mounted
+    uint32_t     write_time; // Last time has been written
 
-    u16     mount_count; // How many mount since last full check
-    u16     max_mount_count;
-    u16     ext2_magic;
-    u16		state;
-    u16		errors_behaviour;
-    u16		minor_rev_level;
+    uint16_t     mount_count; // How many mount since last full check
+    uint16_t     max_mount_count;
+    uint16_t     ext2_magic;
+    uint16_t		state;
+    uint16_t		errors_behaviour;
+    uint16_t		minor_rev_level;
 
-    u32		last_check;
-    u32		checkInterval;
-    u32		creator_os;
-    u32		rev_level;
+    uint32_t		last_check;
+    uint32_t		checkInterval;
+    uint32_t		creator_os;
+    uint32_t		rev_level;
 
-    u16		def_reserved_uid;
-    u16		de_reserved_gid;
+    uint16_t		def_reserved_uid;
+    uint16_t		de_reserved_gid;
 
-    u32		first_inode;
+    uint32_t		first_inode;
 
-    u16		inode_size;
-    u16		block_group_nr;
+    uint16_t		inode_size;
+    uint16_t		block_group_nr;
 
-    u32		feature_compat;
-    u32		feature_incompat;
-    u32		feature_ro_compat;
+    uint32_t		feature_compat;
+    uint32_t		feature_incompat;
+    uint32_t		feature_ro_compat;
 
-	u8		uuid[16];
+	uint8_t		uuid[16];
 	char	volume_name[16];
 	char	last_mounted[64];
-	u32		algo_bitmap;
-	u8		padding[820];
+	uint32_t		algo_bitmap;
+	uint8_t		padding[820];
 } __attribute__((packed));
 
 struct ext2_group_desc
 {
-	u32		block_bitmap;
-	u32		inode_bitmap;
-	u32		inode_table;
+	uint32_t		block_bitmap;
+	uint32_t		inode_bitmap;
+	uint32_t		inode_table;
 
-	u16		free_blocks_count;
-	u16		free_inodes_count;
-	u16		used_dirs_count;
-	u16		padding;
+	uint16_t		free_blocks_count;
+	uint16_t		free_inodes_count;
+	uint16_t		used_dirs_count;
+	uint16_t		padding;
 
-	u32		reserved[3];
+	uint32_t		reserved[3];
 } __attribute__((packed));
 
 struct ext2_inode
 {
-	u16		mode;
-	u16		uid;
+	uint16_t		mode;
+	uint16_t		uid;
 
-	u32		size;
-	u32		atime;
-	u32		ctime;
-	u32		mtime;
-	u32		dtime;
+	uint32_t		size;
+	uint32_t		atime;
+	uint32_t		ctime;
+	uint32_t		mtime;
+	uint32_t		dtime;
 
-	u16		gid;
-	u16		links_count;
+	uint16_t		gid;
+	uint16_t		links_count;
 
-	u32		blocks;
-	u32		flags;
-	u32		osd1;
+	uint32_t		blocks;
+	uint32_t		flags;
+	uint32_t		osd1;
 
-	u32		block[15];
-	u32		generation;
-	u32		file_acl;
-	u32		dir_acl;
-	u32		faddr;
+	uint32_t		block[15];
+	uint32_t		generation;
+	uint32_t		file_acl;
+	uint32_t		dir_acl;
+	uint32_t		faddr;
 
-	u8		osd2[12];
+	uint8_t		osd2[12];
 } __attribute__((packed));
 
 struct directory_entry
 {
-    u32		inode;
-    u16		record_entry;
-    u8		name_len;
-    u8		file_type;
+    uint32_t		inode;
+    uint16_t		record_entry;
+    uint8_t		name_len;
+    uint8_t		file_type;
 
     char	name;
 } __attribute__((packed));
 
 struct filePrivateData
 {
-	u32					inum;
+	uint32_t					inum;
 	ext2_inode*	inode;
 };
 
 struct open_file
 {
     struct file*		file;
-	u32					ptr;
+	uint32_t					ptr;
 	open_file*	next;
 };
 
@@ -180,8 +180,8 @@ class Ext2FS final : public FileSystem
         }
 
     private:
-		u32 _blockSize;
-		u16	_groupNumber;
+		uint32_t _blockSize;
+		uint16_t	_groupNumber;
 
         ext2_super_block *_sb;
 		ext2_group_desc *_groups;

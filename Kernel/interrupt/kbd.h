@@ -1,6 +1,6 @@
 #pragma once
 
-inline uchar kbdmap[] = {
+inline uint8_t kbdmap[] = {
 	0x1B, 0x1B, 0x1B, 0x1B,	/*      esc     (0x01)  */
 	'1', '!', '1', '1',
 	'2', '@', '2', '2',

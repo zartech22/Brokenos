@@ -6,7 +6,7 @@
 class TextDisplayMode final : public Screen
 {
 public:
-    void putcar(const uchar c) override
+    void putcar(const uint8_t c) override
     {
         if(c == 10) //saut de ligne (CR-NL)
         {
@@ -43,11 +43,11 @@ private:
     friend class Screen;
     friend int main(struct mb_partial_info*);
 
-    explicit TextDisplayMode(const VbeModeInfo *info) : Screen(), _frameBuffer(reinterpret_cast<uchar *>(0xB8000))
+    explicit TextDisplayMode(const VbeModeInfo *info) : Screen(), _frameBuffer(reinterpret_cast<uint8_t *>(0xB8000))
     {
         _maxX = info->XResolution;
         _maxY = info->YResolution;
     }
 
-    uchar * const _frameBuffer;
+    uint8_t * const _frameBuffer;
 };

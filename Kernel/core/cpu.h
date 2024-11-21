@@ -5,7 +5,7 @@
 namespace kernel::core::cpu {
     inline String getVendor()
     {
-        auto vendor = new u32[13];
+        auto vendor = new uint32_t[13];
 
         asm ("xor %%eax, %%eax;"
                     "cpuid;"
@@ -22,7 +22,7 @@ namespace kernel::core::cpu {
 
     inline String getBrand()
     {
-        auto brand = new u32[49];
+        auto brand = new uint32_t[49];
 
         asm ("cpuid;" : "=a" (*brand), "=b" (*(brand + 1)), "=c" (*(brand + 2)), "=d" (*(brand + 3)) : "a" (0x80000002));
         asm ("cpuid;" : "=a" (*(brand + 4)), "=b" (*(brand + 5)), "=c" (*(brand + 6)), "=d" (*(brand + 7)) : "a" (0x80000003));

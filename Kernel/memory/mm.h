@@ -77,22 +77,22 @@ struct vm_area
 inline char *kern_heap;
 inline vm_area *free_vm;
 
-inline auto pd0 = reinterpret_cast<u32 *>(KERN_PDIR);	//kernel page dir
+inline auto pd0 = reinterpret_cast<uint32_t *>(KERN_PDIR);	//kernel page dir
 inline char *pg0 = nullptr; //kernel page 0 (4MB)
 inline auto pg1 = reinterpret_cast<char *>(0x400000); //kernel page 1 (4MB)
 inline auto pg1_end = reinterpret_cast<char *>(0x800000); //limite page 1
-inline u8 mem_bitmap[RAM_MAXPAGE / 8];	//bitmap allocation page 1Go
+inline uint8_t mem_bitmap[RAM_MAXPAGE / 8];	//bitmap allocation page 1Go
 #else
 extern char *kern_heap;
 extern struct vm_area *free_vm;
 
-extern u32 *pd0;
-extern u8 mem_bitmap[];
+extern uint32_t *pd0;
+extern uint8_t mem_bitmap[];
 #endif
 
 //page libere ou utiliser
-#define set_page_frame_used(page)	mem_bitmap[((u32) page) / 8] |= (1 << (((u32) page) % 8))
-#define release_page_frame(p_addr)	mem_bitmap[((u32) p_addr / PAGESIZE) / 8] &= ~(1 << (((u32) p_addr / PAGESIZE) % 8))
+#define set_page_frame_used(page)	mem_bitmap[((uint32_t) page) / 8] |= (1 << (((uint32_t) page) % 8))
+#define release_page_frame(p_addr)	mem_bitmap[((uint32_t) p_addr / PAGESIZE) / 8] &= ~(1 << (((uint32_t) p_addr / PAGESIZE) % 8))
 
 //select une page vide ds le bitmap
 char *get_page_frame();
@@ -103,7 +103,7 @@ page* get_page_from_heap(char* p_addr, const char* end_p_addr = nullptr);
 int release_page_from_heap(char *);
 
 //init les struct de donnees de gestion de la memoire
-void init_mm(u32);
+void init_mm(uint32_t);
 
 //creer un rep de page pour une tache
 struct page_directory* pd_create();

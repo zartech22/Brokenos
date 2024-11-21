@@ -12,7 +12,7 @@
 class GraphicDisplayMode final : public Screen
 {
 public:
-    void putcar(const uchar c) override
+    void putcar(const uint8_t c) override
     {
         if(c == 10) //saut de ligne (CR-NL)
         {
@@ -37,8 +37,8 @@ public:
         {
             const kernel::video::fonts::Glyph& letter = _font->getGlyph(c);
 
-            uchar *tmp = _frameBuffer + _posY * _bytePerLine * letter.height + _posX * _bitsPerPixel;
-            uchar *tmp_buffer = _buffer + _posY * _bytePerLine * letter.height + _posX * _bitsPerPixel;
+            uint8_t *tmp = _frameBuffer + _posY * _bytePerLine * letter.height + _posX * _bitsPerPixel;
+            uint8_t *tmp_buffer = _buffer + _posY * _bytePerLine * letter.height + _posX * _bitsPerPixel;
 
             if(_posX == _maxX)
                 putcar('\n');
@@ -49,7 +49,7 @@ public:
                 {
                     if(letter.data[x][y])
                     {
-                        for(u8 i = 0; i < 3; ++i)
+                        for(uint8_t i = 0; i < 3; ++i)
                         {
                             tmp_buffer[i] = (get32BitsColor(static_cast<Color>(getColor() & 0xF)) >> (8 * i)) & 0xFF;
                             tmp[i] = (get32BitsColor(static_cast<Color>(getColor() & 0xF)) >> (8 * i)) & 0xFF;
@@ -57,7 +57,7 @@ public:
                     }
                     else
                     {
-                        for(u8 i = 0; i < 3; ++i)
+                        for(uint8_t i = 0; i < 3; ++i)
                         {
                             tmp_buffer[i] = (get32BitsColor(static_cast<Color>(getColor() >> 4)) >> (8 * i)) & 0xFF;
                             tmp[i] = (get32BitsColor(static_cast<Color>(getColor() >> 4)) >> (8 * i)) & 0xFF;
@@ -83,13 +83,13 @@ public:
     void scrollup(uint8_t n) override
     {
         unsigned int const videoEnd = (_maxY + 1) * _bytePerLine * _font->getHeight();
-        uchar *offset = _buffer + n * _bytePerLine * _font->getHeight();
+        uint8_t *offset = _buffer + n * _bytePerLine * _font->getHeight();
 
 
         //memcpy((char*)_frameBuffer, (char*)offset, (videoEnd - (_frameBuffer + n * _bytePerLine * 8)));
 
         unsigned int pos;
-        u32 val1, val2;
+        uint32_t val1, val2;
 
         while(inb(0x3DA) & 0x08);
         while(!(inb(0x3DA) & 0x08));
@@ -168,10 +168,10 @@ private:
     friend int main(mb_partial_info*);
 
     GraphicDisplayMode(const VbeModeInfo *info, char *framebuffer) : _buffer(
-                                                                         new uchar[info->YResolution * info->
+                                                                         new uint8_t[info->YResolution * info->
                                                                              BytesPerScanLine]),
                                                                      _frameBuffer(
-                                                                         reinterpret_cast<uchar *>(framebuffer)),
+                                                                         reinterpret_cast<uint8_t *>(framebuffer)),
                                                                      _pixel(_frameBuffer),
                                                                      _bytePerLine(info->BytesPerScanLine),
                                                                      _bitsPerPixel(info->BitsPerPixel),
@@ -183,8 +183,8 @@ private:
         memset(reinterpret_cast<char *>(_buffer), 0, info->YResolution * _bytePerLine);
     }
 
-    GraphicDisplayMode(char *framebuffer, const u32 width, const u32 height, const u8 bitsPerPixel, const u32 bytePerScanline) : _buffer(
-            new uchar[height * bytePerScanline]), _frameBuffer(reinterpret_cast<uchar *>(framebuffer)),
+    GraphicDisplayMode(char *framebuffer, const uint32_t width, const uint32_t height, const uint8_t bitsPerPixel, const uint32_t bytePerScanline) : _buffer(
+            new uint8_t[height * bytePerScanline]), _frameBuffer(reinterpret_cast<uint8_t *>(framebuffer)),
         _pixel(_frameBuffer), _bytePerLine(bytePerScanline), _bitsPerPixel(bitsPerPixel),
         _pixelWidth(_bitsPerPixel / 8), _font(new kernel::video::fonts::PsfFont) {
 
@@ -195,11 +195,11 @@ private:
         memset(reinterpret_cast<char *>(_buffer), 0, height * _bytePerLine);
     }
 
-    uchar * const _buffer;
-    uchar * const _frameBuffer;
-    uchar* _pixel;
-    u32 _bytePerLine;
-    u8  _bitsPerPixel;
-    u8  _pixelWidth;
+    uint8_t * const _buffer;
+    uint8_t * const _frameBuffer;
+    uint8_t* _pixel;
+    uint32_t _bytePerLine;
+    uint8_t  _bitsPerPixel;
+    uint8_t  _pixelWidth;
     kernel::video::fonts::Font* _font;
 };

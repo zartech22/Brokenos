@@ -39,8 +39,8 @@ void isr_clock_int() {
 }
 
 void isr_GP_exc() {
-    u32 fault_addr;
-    u32 error;
+    uint32_t fault_addr;
+    uint32_t error;
     auto opcode = (char *) fault_addr;
 
     asm("movl 44(%%esp), %%eax;"
@@ -83,9 +83,9 @@ void isr_GP_exc() {
 }
 
 void isr_PF_exc() {
-    u32 faulting_addr;
-    u32 eip;
-    u32 error;
+    uint32_t faulting_addr;
+    uint32_t eip;
+    uint32_t error;
 
     asm("	movl 60(%%ebp), %%eax;	\
 			mov %%eax, %0;			\
@@ -115,7 +115,7 @@ void isr_PF_exc() {
 }
 
 void isr_kbd_int() {
-    uchar i;
+    uint8_t i;
     static int lshift_enable;
     static int rshift_enable;
     static int alt_enable;
@@ -182,8 +182,8 @@ void do_syscall(int sys_num) {
         Screen::getScreen().print(u_str);
         sti;
     } else if (sys_num == 2) {
-        u16 kss;
-        u32 kesp;
+        uint16_t kss;
+        uint32_t kesp;
 
         page_list *pl, *oldpl;
 
@@ -202,7 +202,7 @@ void do_syscall(int sys_num) {
             kfree(oldpl);
         }
 
-        release_page_frame((u32) get_p_addr((char*) USER_STACK));
+        release_page_frame((uint32_t) get_p_addr((char*) USER_STACK));
 
         kss = p_list[0].regs.ss;
         kesp = p_list[0].regs.esp;

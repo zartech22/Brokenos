@@ -5,44 +5,44 @@
 //desc de segment
 struct gdtdesc
 {
-	u16 lim0_15;
-	u16 base0_15;
-	u8 base16_23;
-	u8 acces;
-	u8 lim16_19 : 4;
-	u8 other : 4;
-	u8 base24_31;
+	uint16_t lim0_15;
+	uint16_t base0_15;
+	uint8_t base16_23;
+	uint8_t acces;
+	uint8_t lim16_19 : 4;
+	uint8_t other : 4;
+	uint8_t base24_31;
 } __attribute__ ((packed));
 
 //registre GDTR
 struct gdtr
 {
-	u16 limite;
-	u32 base;
+	uint16_t limite;
+	uint32_t base;
 } __attribute__ ((packed));
 
 struct tss
 {
-	u16 previous_task, __previous_task_unused;
-	u32 esp0;
-	u16 ss0, __ss0_unused;
-	u32 esp1;
-	u16 ss1, __ss1_unused;
-	u32 esp2;
-	u16 ss2, __ss2_unused;
-	u32 cr3;
-	u32 eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
-	u16 es, __es_unused;
-	u16 cs, __cs_unused;
-	u16 ss, __ss_unused;
-	u16 ds, __ds_unused;
-	u16 fs, __fs_unused;
-	u16 gs, __gs_unused;
-	u16 ldt_selector, __ldt_sel_unused;
-	u16 debug_flag, io_map;
+	uint16_t previous_task, __previous_task_unused;
+	uint32_t esp0;
+	uint16_t ss0, __ss0_unused;
+	uint32_t esp1;
+	uint16_t ss1, __ss1_unused;
+	uint32_t esp2;
+	uint16_t ss2, __ss2_unused;
+	uint32_t cr3;
+	uint32_t eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+	uint16_t es, __es_unused;
+	uint16_t cs, __cs_unused;
+	uint16_t ss, __ss_unused;
+	uint16_t ds, __ds_unused;
+	uint16_t fs, __fs_unused;
+	uint16_t gs, __gs_unused;
+	uint16_t ldt_selector, __ldt_sel_unused;
+	uint16_t debug_flag, io_map;
 } __attribute__ ((packed));
 
-void init_gdt_desc(u32, u32, u8, u8, gdtdesc*);
+void init_gdt_desc(uint32_t, uint32_t, uint8_t, uint8_t, gdtdesc*);
 void init_gdt();
 
 #ifdef __GDT__

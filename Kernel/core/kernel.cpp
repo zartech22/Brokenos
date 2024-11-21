@@ -47,13 +47,13 @@ namespace kernel {
          movl %0, %%esp" :: "i"(KERN_STACK));
 
         mmapInfo mmap[1024];
-        u32 size = mbinfo->mmap_length;
+        uint32_t size = mbinfo->mmap_length;
         int index = 0;
 
         if (mbinfo->flags & (1 << 6)) {
             auto *currentMmap = reinterpret_cast<struct mmapInfo *>(mbinfo->mmap_addr);
 
-            while (reinterpret_cast<u32>(currentMmap) < (mbinfo->mmap_addr + mbinfo->mmap_length)) {
+            while (reinterpret_cast<uint32_t>(currentMmap) < (mbinfo->mmap_addr + mbinfo->mmap_length)) {
                 mmap[index].addr_low = currentMmap->addr_low;
                 mmap[index].addr_high = currentMmap->addr_high;
 
@@ -76,7 +76,7 @@ namespace kernel {
 
         sScreen.printDebug("Mmap Length : %d", size);
 
-        for (u32 j = 0; j < index; ++j) {
+        for (uint32_t j = 0; j < index; ++j) {
             sScreen.printDebug("\t%p - %p ; Length : %x Type : %d", mmap[j].addr_low,
                                (mmap[j].addr_low + mmap[j].length_low), mmap[j].length_low, mmap[j].type);
             if (mmap[j].addr_high != 0 || mmap[j].length_high != 0)
@@ -131,7 +131,7 @@ namespace kernel {
         current = &p_list[0];
         current->pid = 0;
         current->state = 1;
-        current->regs.cr3 = reinterpret_cast<u32>(pd0);
+        current->regs.cr3 = reinterpret_cast<uint32_t>(pd0);
 
         //n_proc = 0;
         //n_proc++;
@@ -143,7 +143,7 @@ namespace kernel {
         pciGetVendors();
 
         Vector<IdeCtrl *> &ideControllerList = IdeCtrl::getControllerList();
-        const u8 controllerCount = ideControllerList.size();
+        const uint8_t controllerCount = ideControllerList.size();
 
         sScreen.println("Nombre de controlleur IDE : %d", controllerCount);
 

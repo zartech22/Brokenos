@@ -13,17 +13,17 @@ struct process
 	
 	struct
 	{
-        u32 eax, ecx, edx, ebx;
-		u32 esp, ebp, esi, edi;
-		u32 eip, eflags;
-		u32 cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
-		u32 cr3;
+        uint32_t eax, ecx, edx, ebx;
+		uint32_t esp, ebp, esi, edi;
+		uint32_t eip, eflags;
+		uint32_t cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
+		uint32_t cr3;
 	} regs __attribute__ ((packed));
 	
 	struct
 	{
-		u32 esp0;
-		u16 ss0;
+		uint32_t esp0;
+		uint16_t ss0;
 	} kstack __attribute__ ((packed));
 	
 	//Redondance entre regs.cr3 et pd->bae->p_addr;
@@ -40,11 +40,11 @@ struct thread
 {
     struct
     {
-        u32 eax, ebx, ecx, edx;
-        u32 esp, ebp, esi, edi;
-        u32 eip, eflags;
-        u32 cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
-        u32 cr3;
+        uint32_t eax, ebx, ecx, edx;
+        uint32_t esp, ebp, esi, edi;
+        uint32_t eip, eflags;
+        uint32_t cs:16, ss:16, ds:16, es:16, fs:16, gs:16;
+        uint32_t cr3;
     } regs __attribute__ ((packed));
 
     char *function;
@@ -63,7 +63,7 @@ struct thread
 #endif
 
 
-int load_task(char*, u32);
+int load_task(char*, uint32_t);
 int load_task(const char *filename);
 
 void createThread(void *fn);

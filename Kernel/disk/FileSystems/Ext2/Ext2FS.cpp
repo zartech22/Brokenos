@@ -278,7 +278,7 @@ file* Ext2FS::getDirEntries(file *dir)
 	} else
 		fileToClose = false;
 
-    u32 dsize = data->inode->size;
+    uint32_t dsize = data->inode->size;
     auto *dentry = reinterpret_cast<struct directory_entry *>(dir->content);
 
 	file *firstLeaf = prevLeaf = dir->leaf;

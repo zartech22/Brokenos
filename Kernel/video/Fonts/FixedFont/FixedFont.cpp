@@ -5,9 +5,6 @@
 #include "FixedFont.h"
 #include "FixedFontData.h"
 
-#include <bit>
-#include <bitset>
-
 namespace kernel::video::fonts {
     FixedFont::FixedFont() : Font (1, 8, 8) {
     }

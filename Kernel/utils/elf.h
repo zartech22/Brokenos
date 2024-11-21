@@ -48,38 +48,38 @@
 
 typedef struct
 {
-    uchar   ident[16];  // ELF ident
+    uint8_t     ident[16];  // ELF ident
 
-    u16     type;       // 2 = Exec file
-    u16     machine;    // 3 = intel arch
+    uint16_t    type;       // 2 = Exec file
+    uint16_t    machine;    // 3 = intel arch
 
-    u32     version;    // 1
-    u32     entry;      // Start point
-    u32     ph_off;     // ProgramHeader table offset
-    u32     sh_off;     // SectionHeader table offset
-    u32     flags;
+    uint32_t    version;    // 1
+    uint32_t    entry;      // Start point
+    uint32_t    ph_off;     // ProgramHeader table offset
+    uint32_t    sh_off;     // SectionHeader table offset
+    uint32_t    flags;
 
-    u16     header_size;    // ELF header size
-    u16     ph_entry_size;  // ProgramHeader entry size
-    u16     ph_num;         // entry's number
-    u16     sh_entry_size;
-    u16     sh_num;
-    u16     sh_str_idx;     // Name string's section's index
+    uint16_t    header_size;    // ELF header size
+    uint16_t    ph_entry_size;  // ProgramHeader entry size
+    uint16_t    ph_num;         // entry's number
+    uint16_t    sh_entry_size;
+    uint16_t    sh_num;
+    uint16_t    sh_str_idx;     // Name string's section's index
 
 } Elf32_header;
 
 // Program header
 typedef struct
 {
-    u32 type;
-    u32 offset;
-    u32 vaddr;
-    u32 paddr;
-    u32 file_size;
-    u32 mem_size;
-    u32 flags;
-    u32 align;
+    uint32_t type;
+    uint32_t offset;
+    uint32_t vaddr;
+    uint32_t paddr;
+    uint32_t file_size;
+    uint32_t mem_size;
+    uint32_t flags;
+    uint32_t align;
 } Elf_program_header;
 
-bool isElf(char*);
-u32 loadElf(char*, page_directory*, page_list*);
+bool isElf(const char*);
+uint32_t loadElf(char*, page_directory*, page_list*);

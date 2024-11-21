@@ -6,7 +6,7 @@
 
 Vector<IdeCtrl*> *IdeCtrl::IdeList = nullptr;
 
-IdeCtrl::IdeCtrl(u8 bus, u8 device, u8 function)
+IdeCtrl::IdeCtrl(uint8_t bus, uint8_t device, uint8_t function)
     : _bus(bus), _device(device), _function(function)
 {
     _primaryPorts[0] = 0x1F0;
@@ -65,7 +65,7 @@ void IdeCtrl::displayTree()
 
 void IdeCtrl::checkPorts()
 {
-    u8 progIf = pciConfigReadByte(_bus, _device, _function, 0x09);
+    uint8_t progIf = pciConfigReadByte(_bus, _device, _function, 0x09);
 
     sScreen.println("Checking ports...");
     sScreen.println("ProfIF is: %b", progIf);

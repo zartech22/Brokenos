@@ -11,7 +11,7 @@ class IdeDrive;
 class IdeCtrl
 {
 public:
-    static IdeCtrl& addController(u8 bus, u8 device, u8 function)
+    static IdeCtrl& addController(uint8_t bus, uint8_t device, uint8_t function)
     {
         auto *ctrl = new IdeCtrl(bus, device, function);
         addControllerToList(ctrl);
@@ -29,7 +29,7 @@ public:
     {
     }
 
-    IdeCtrl(u8 bus, u8 device, u8 function);
+    IdeCtrl(uint8_t bus, uint8_t device, uint8_t function);
     ~IdeCtrl() = default;
 
     IdeDrive &getDrive(BusRole bus, DriveRole drive);
@@ -50,9 +50,9 @@ private:
         IdeList->push_back(ctrl);
     }
 
-    u8 _bus, _device, _function;
+    uint8_t _bus, _device, _function;
 
-    u16 _primaryPorts[2], _secondaryPorts[2];
+    uint16_t _primaryPorts[2], _secondaryPorts[2];
 
     bool _connectedDevice[4];
 

@@ -8,16 +8,16 @@
 //desc de seg
 struct idtdesc
 {
-	u16 offset0_15;
-	u16 select;
-	u16 type;
-	u16 offset16_31;
+	uint16_t offset0_15;
+	uint16_t select;
+	uint16_t type;
+	uint16_t offset16_31;
 } __attribute__ ((packed));
 
 struct idtr
 {
-	u16 limite;
-	u32 base;
+	uint16_t limite;
+	uint32_t base;
 } __attribute__ ((packed));
 
 #ifdef __IDT__
@@ -28,5 +28,5 @@ struct idtr
 	extern idtdesc kidt[];
 #endif
 
-void init_idt_desc(u16, u32, u16, idtdesc *desc);
+void init_idt_desc(uint16_t, uint32_t, uint16_t, idtdesc *desc);
 void init_idt();

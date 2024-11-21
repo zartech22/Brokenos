@@ -13,11 +13,11 @@ class Partitions
 public:
     explicit Partitions(IdeDrive *drive) : _drive(drive) {}
 
-    [[nodiscard]] u8 getPartitionsNumber() const { return _partitions.size(); }
+    [[nodiscard]] uint8_t getPartitionsNumber() const { return _partitions.size(); }
 
     void fillPartitions()
     {
-        for(u8 i = 0; i < 4; ++i)
+        for(uint8_t i = 0; i < 4; ++i)
         {
             auto *part = new struct Partition;
             _drive->read(0x01BE + (i * 0x10), reinterpret_cast<char *>(part), sizeof(Partition));

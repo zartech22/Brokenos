@@ -11,7 +11,7 @@ char* get_page_frame()
 	
     for(unsigned int byte = 0; byte < RAM_MAXPAGE / 8; byte++)
 		if(mem_bitmap[byte] != 0xFF)
-            for(u8 bit = 0; bit < 8; bit++)
+            for(uint8_t bit = 0; bit < 8; bit++)
 				if(!(mem_bitmap[byte] & (1 << bit)))
 				{
 					page = 8 * byte + bit;
@@ -189,7 +189,7 @@ int release_page_from_heap(char *v_addr)
 	return 0;
 }
 
-void init_mm(u32 high_mem)
+void init_mm(uint32_t high_mem)
 {
 	int pg_limit;
 
@@ -202,18 +202,18 @@ void init_mm(u32 high_mem)
     for(unsigned int pg = pg_limit / 8; pg < RAM_MAXPAGE / 8; pg++)
 		mem_bitmap[pg] = 0xFF;
 		
-    for(unsigned int pg = PAGE(0x0); pg < PAGE(reinterpret_cast<u32>(pg1_end)); pg++)
+    for(unsigned int pg = PAGE(0x0); pg < PAGE(reinterpret_cast<uint32_t>(pg1_end)); pg++)
 		set_page_frame_used(pg);
 	
 	//Init rep de pages
-	pd0[0] = reinterpret_cast<u32>(pg0) | (PG_PRESENT | PG_WRITE | PG_4MB);
-	pd0[1] = reinterpret_cast<u32>(pg1) | (PG_PRESENT | PG_WRITE | PG_4MB);
+	pd0[0] = reinterpret_cast<uint32_t>(pg0) | (PG_PRESENT | PG_WRITE | PG_4MB);
+	pd0[1] = reinterpret_cast<uint32_t>(pg1) | (PG_PRESENT | PG_WRITE | PG_4MB);
 	
 	for(unsigned long i = 2; i < 1023; i++)
-		pd0[i] = reinterpret_cast<u32>(pg1) + PAGESIZE * i | (PG_PRESENT | PG_WRITE);
+		pd0[i] = reinterpret_cast<uint32_t>(pg1) + PAGESIZE * i | (PG_PRESENT | PG_WRITE);
 	
 	//Astuce acces pd
-	pd0[1023] = reinterpret_cast<u32>(pd0) | (PG_PRESENT | PG_WRITE);
+	pd0[1023] = reinterpret_cast<uint32_t>(pd0) | (PG_PRESENT | PG_WRITE);
 	
 	//Mode pagination
 	asm("	mov %0, %%eax 		\n\
@@ -246,7 +246,7 @@ page_directory* pd_create()
 	
 	//Espace kernel. Les v_addr < USER_OFFSET sont adresse par table
 	//page du noyau
-	auto pdir = reinterpret_cast<u32 *>(pd->base->v_addr);
+	auto pdir = reinterpret_cast<uint32_t *>(pd->base->v_addr);
 	for(int i = 0; i < 256; i++)
 		pdir[i] = pd0[i];
 	
@@ -255,7 +255,7 @@ page_directory* pd_create()
 		pdir[i] = 0;
 	
 	//Astuce acces
-	pdir[1023] = reinterpret_cast<u32>(pd->base->p_addr) | (PG_PRESENT | PG_WRITE);
+	pdir[1023] = reinterpret_cast<uint32_t>(pd->base->p_addr) | (PG_PRESENT | PG_WRITE);
 	
 	//Maj tables de page espace user
 	pd->pt = nullptr;
@@ -286,8 +286,8 @@ int pd_destroy(const page_directory *pd)
 
 int pd0_add_page(const char *v_addr, char *p_addr, int flags)
 {
-	u32 *pde;
-	u32 *pte;
+	uint32_t *pde;
+	uint32_t *pte;
 	
 	if(v_addr > reinterpret_cast<char *>(USER_OFFSET))
 	{
@@ -296,7 +296,7 @@ int pd0_add_page(const char *v_addr, char *p_addr, int flags)
 	}
 	
 	//On verifie que la table de page est bien presente
-	pde = reinterpret_cast<u32 *>(0xFFFFF000 | ((reinterpret_cast<u32>(v_addr) & 0xFFC00000) >> 20));
+	pde = reinterpret_cast<uint32_t *>(0xFFFFF000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFC00000) >> 20));
 	
 	if((*pde & PG_PRESENT) == 0)
 	{
@@ -305,8 +305,8 @@ int pd0_add_page(const char *v_addr, char *p_addr, int flags)
 	}
 	
 	//Modification de l'entree dans la table de page
-	pte = reinterpret_cast<u32 *>(0xFFC00000 | ((reinterpret_cast<u32>(v_addr) & 0xFFFFF000) >> 10));
-	*pte = reinterpret_cast<u32>(p_addr) | (PG_PRESENT | PG_WRITE | flags);
+	pte = reinterpret_cast<uint32_t *>(0xFFC00000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFFFF000) >> 10));
+	*pte = reinterpret_cast<uint32_t>(p_addr) | (PG_PRESENT | PG_WRITE | flags);
 	
 	return 0;
 }
@@ -333,7 +333,7 @@ int pd_add_page(char *v_addr, char *p_addr, const int flags, page_directory *pd)
 	 *   PageTable. Les 12 derniers bits permettent de modifier une entree du PageTable
 	 * - l'adresse 0xFFFFF000 designe le PageDir lui-meme
 	 */
-	auto pde = reinterpret_cast<u32 *>(0xFFFFF000 | ((reinterpret_cast<u32>(v_addr) & 0xFFC00000) >> 20));
+	auto pde = reinterpret_cast<uint32_t *>(0xFFFFF000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFC00000) >> 20));
 
 	/* 
 	 * On cree la table de pages correspondante si elle n'est pas presente
@@ -345,12 +345,12 @@ int pd_add_page(char *v_addr, char *p_addr, const int flags, page_directory *pd)
 		page *newpg = get_page_from_heap();
 
 		/* On initialise la nouvelle table de pages */
-		const auto pt = reinterpret_cast<u32 *>(newpg->v_addr);
-        for (u16 i = 1; i < 1024; i++)
+		const auto pt = reinterpret_cast<uint32_t *>(newpg->v_addr);
+        for (uint16_t i = 1; i < 1024; i++)
 			pt[i] = 0;
 
 		/* On ajoute l'entree correspondante dans le repertoire */
-		*pde = reinterpret_cast<u32>(newpg->p_addr) | (PG_PRESENT | PG_WRITE | flags);
+		*pde = reinterpret_cast<uint32_t>(newpg->p_addr) | (PG_PRESENT | PG_WRITE | flags);
 
 		/* On rajoute la nouvelle page dans la structure  passee en parametre */
 		if (pd) {
@@ -371,8 +371,8 @@ int pd_add_page(char *v_addr, char *p_addr, const int flags, page_directory *pd)
 
 	}
 
-	const auto pte = reinterpret_cast<u32 *>(0xFFC00000 | ((reinterpret_cast<u32>(v_addr) & 0xFFFFF000) >> 10));
-	*pte = reinterpret_cast<u32>(p_addr) | (PG_PRESENT | PG_WRITE | flags);
+	const auto pte = reinterpret_cast<uint32_t *>(0xFFC00000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFFFF000) >> 10));
+	*pte = reinterpret_cast<uint32_t>(p_addr) | (PG_PRESENT | PG_WRITE | flags);
 
 	return 0;
 }
@@ -380,8 +380,8 @@ int pd_add_page(char *v_addr, char *p_addr, const int flags, page_directory *pd)
 int pd_remove_page(char *v_addr)
 {
 	if (get_p_addr(v_addr)) {
-		u32 *pte;
-		pte = reinterpret_cast<u32 *>(0xFFC00000 | ((reinterpret_cast<u32>(v_addr) & 0xFFFFF000) >> 10));
+		uint32_t *pte;
+		pte = reinterpret_cast<uint32_t *>(0xFFC00000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFFFF000) >> 10));
 		*pte = (*pte & (~PG_PRESENT));
 		asm("invlpg %0"::"m"(v_addr));
 	}
@@ -397,11 +397,11 @@ char *get_p_addr(char *v_addr)
 {
 	/* adresse virtuelle de l'entree du repertoire de pages */
 
-	auto pde = reinterpret_cast<u32 *>(0xFFFFF000 | ((reinterpret_cast<u32>(v_addr) & 0xFFC00000) >> 20));
+	auto pde = reinterpret_cast<uint32_t *>(0xFFFFF000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFC00000) >> 20));
 	if ((*pde & PG_PRESENT)) {
-		auto pte = (u32 *) (0xFFC00000 | ((reinterpret_cast<u32>(v_addr) & 0xFFFFF000) >> 10));
+		auto pte = (uint32_t *) (0xFFC00000 | ((reinterpret_cast<uint32_t>(v_addr) & 0xFFFFF000) >> 10));
 		if ((*pte & PG_PRESENT))
-			return reinterpret_cast<char *>((*pte & 0xFFFFF000) + (VADDR_PG_OFFSET(reinterpret_cast<u32>(v_addr))));
+			return reinterpret_cast<char *>((*pte & 0xFFFFF000) + (VADDR_PG_OFFSET(reinterpret_cast<uint32_t>(v_addr))));
 	}
 
 	return nullptr;

@@ -19,7 +19,7 @@ void _asm_exc_PF();
 	}
 #endif
 
-void init_idt_desc(const u16 select, const u32 offset, const u16 type, idtdesc *desc)
+void init_idt_desc(const uint16_t select, const uint32_t offset, const uint16_t type, idtdesc *desc)
 {
 	desc->offset0_15 = (offset & 0xffff);
 	desc->select = select;
@@ -30,17 +30,17 @@ void init_idt_desc(const u16 select, const u32 offset, const u16 type, idtdesc *
 void init_idt()
 {
 	//init desc sys par def.
-    for(u8 i = 0; i < IDTSIZE; i++)
-		init_idt_desc(0x08, reinterpret_cast<u32>(_asm_default_int), INTGATE, &kidt[i]);
+    for(uint8_t i = 0; i < IDTSIZE; i++)
+		init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_default_int), INTGATE, &kidt[i]);
 	
 	//exceptions
-	init_idt_desc(0x08, reinterpret_cast<u32>(_asm_exc_GP), INTGATE, &kidt[13]);
-	init_idt_desc(0x08, reinterpret_cast<u32>(_asm_exc_PF), INTGATE, &kidt[14]);
+	init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_exc_GP), INTGATE, &kidt[13]);
+	init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_exc_PF), INTGATE, &kidt[14]);
 		
 	//interrupt
-	init_idt_desc(0x08, reinterpret_cast<u32>(_asm_irq_0), INTGATE, &kidt[32]); //horloge
-	init_idt_desc(0x08, reinterpret_cast<u32>(_asm_irq_1), INTGATE, &kidt[33]); //clavier
-	init_idt_desc(0x08, reinterpret_cast<u32>(_asm_syscalls), TRAPGATE, &kidt[48]); //appels systèmes
+	init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_irq_0), INTGATE, &kidt[32]); //horloge
+	init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_irq_1), INTGATE, &kidt[33]); //clavier
+	init_idt_desc(0x08, reinterpret_cast<uint32_t>(_asm_syscalls), TRAPGATE, &kidt[48]); //appels systèmes
 	
 	//init struct pr IDTR
 	kidtr.limite = IDTSIZE * 8;

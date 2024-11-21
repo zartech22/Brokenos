@@ -150,7 +150,7 @@ void Screen::setColor(enum Color fgColor, enum Color bgColor)
 	_colors = (bgColor << 4) | fgColor;
 }
 
-void Screen::setPos(u8 posX, u8 posY)
+void Screen::setPos(uint8_t posX, uint8_t posY)
 {
 	_posX = posX;
 	_posY = posY;
@@ -159,18 +159,18 @@ void Screen::setPos(u8 posX, u8 posY)
 void Screen::okMsg()
 {
 	_posY--;
-    printBlock("OK", _maxX - strlen("OK"), static_cast<u8>(Color::Green));
+    printBlock("OK", _maxX - strlen("OK"), static_cast<uint8_t>(Color::Green));
 	_posY++;
 }
 
 void Screen::failMsg()
 {
     _posY -= 8;
-    printBlock("FAIL", _maxX - strlen("FAIL"), static_cast<u8>(Color::Red));
+    printBlock("FAIL", _maxX - strlen("FAIL"), static_cast<uint8_t>(Color::Red));
 	_posY++;
 }
 
-void Screen::dump(const uchar* addr, int n)
+void Screen::dump(const uint8_t* addr, int n)
 {
 	while(n--)
 	{
@@ -200,13 +200,13 @@ void Screen::hide_cursor()
 	move_cursor(-1, -1);
 }
 
-void Screen::scrollup(u8 n)
+void Screen::scrollup(uint8_t n)
 {
-	for(auto *video = reinterpret_cast<uchar *>(RAMSCREEN); video < reinterpret_cast<uchar *>(SCREENLIM); video += 2)
+	for(auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM); video += 2)
 	{
 		auto *tmp = video + n * 160;
 		
-		if(tmp < reinterpret_cast<uchar *>(SCREENLIM))
+		if(tmp < reinterpret_cast<uint8_t *>(SCREENLIM))
 		{
 			*video = *tmp;
 			*(video + 1) = *(tmp + 1);
@@ -225,13 +225,13 @@ void Screen::scrollup(u8 n)
 
 void Screen::showLoadScreen()
 {	
-	for(auto *video = reinterpret_cast<uchar *>(RAMSCREEN); video < reinterpret_cast<uchar *>(SCREENLIM); video += 2)
+	for(auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM); video += 2)
 	{
 		*video = ' ';
 		*(video + 1) = 0x55;
 	}
 	
-	auto *video = reinterpret_cast<uchar *>((RAMSCREEN + 70 + 160 * 13));
+	auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 13));
 
 	constexpr char color = 0x57;
 	
@@ -258,7 +258,7 @@ void Screen::showLoadScreen()
 
 void Screen::showTic()
 {
-	auto *video = reinterpret_cast<uchar *>((RAMSCREEN + 70 + 160 * 14));
+	auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 14));
 	video += _ticNbr * 2;
 	
 	*video = '.';
@@ -291,7 +291,7 @@ void Screen::printk_core(const char *s, va_list ap)
 	char buf[16];
 	int i, j, buflen;
 
-	unsigned char c;
+	uint8_t c;
 	unsigned int uival;
 	
 	while ((c = *s++)) {
@@ -384,20 +384,20 @@ void Screen::printk_core(const char *s, va_list ap)
 				printk(va_arg(ap, String*));
 			} else if(c == 'c') {
 				uival = va_arg(ap, int);
-				putcar(static_cast<uchar>(uival));
+				putcar(static_cast<uint8_t>(uival));
 			}
 		} else
 			putcar(c);
 	}
 }
 
-void Screen::printBlock(const char *msg, u8 posX, u8 colors)
+void Screen::printBlock(const char *msg, uint8_t posX, uint8_t colors)
 {
 	if(posX != 0)
         posX -=  2;
 
-	const u8 tmp = _posX;
-	u8 tmpc = _colors;
+	const uint8_t tmp = _posX;
+	uint8_t tmpc = _colors;
 	
 	_posX = posX;
 	_colors = colors;
@@ -412,14 +412,14 @@ void Screen::printBlock(const char *msg, u8 posX, u8 colors)
         _posX += strlen(msg) + 2;
 }
 
-void Screen::move_cursor(u8 x, u8 y)
+void Screen::move_cursor(uint8_t x, uint8_t y)
 {
-	u16 c_pos;
+	uint16_t c_pos;
 	
 	c_pos = y * 80 + x;
 	
 	outb(0x3d4, 0x0f);
-	outb(0x3d5, static_cast<u8>(c_pos));
+	outb(0x3d5, static_cast<uint8_t>(c_pos));
 	outb(0x3d4, 0x0e);
-	outb(0x3d5, static_cast<u8>(c_pos >> 8));
+	outb(0x3d5, static_cast<uint8_t>(c_pos >> 8));
 }

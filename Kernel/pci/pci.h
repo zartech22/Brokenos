@@ -2,14 +2,14 @@
 
 #include <utils/types.h>
 
-u32 pciConfigReadDWord(u8 bus, u8 slot, u8 function, u8 offset);
-u16 pciConfigReadWord(u8 bus, u8 slot, u8 function, u8 offset);
-u8 pciConfigReadByte(u8 bus, u8 slot, u8 function, u8 offset);
+uint32_t pciConfigReadDWord(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);
+uint16_t pciConfigReadWord(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);
+uint8_t pciConfigReadByte(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset);
 
-void pciConfigWrite(u8 bus, u8 slot, u8 function, u8 offset, u32 data);
+void pciConfigWrite(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset, uint32_t data);
 
-u16 pciGetVendor(u8 bus, u8 slot);
+uint16_t pciGetVendor(uint8_t bus, uint8_t slot);
 
 void pciGetVendors();
 
-void checkBus(u8);
+void checkBus(uint8_t);

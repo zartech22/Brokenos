@@ -4,7 +4,7 @@
 
 #include <disk/IDE/Partitions.h>
 
-IdeDrive::IdeDrive(const u16 regPorts, const u16 controlPort, const DriveRole pos)
+IdeDrive::IdeDrive(const uint16_t regPorts, const uint16_t controlPort, const DriveRole pos)
 : _isConnected(false), _modelName("Device not connected"), _regPorts(regPorts), _controlPort(controlPort), _role(pos)
 {
     initDevice();
@@ -38,7 +38,7 @@ void IdeDrive::displayPartitions()
     for(int i = 0; i < _part->getPartitionsNumber(); ++i)
     {
         const Partition &p = _part->getPartition(i);
-        u32 size =  p.size * 512 / 1024 / 1024 / 1024;
+        uint32_t size =  p.size * 512 / 1024 / 1024 / 1024;
         size += p.size % 1024;
 
         char *data = read(p.s_lba + 2, 2);
@@ -84,7 +84,7 @@ void IdeDrive::initDevice()
         sScreen.printDebug("IT is no ATA... Investigating...");
         isAta = false;
 
-        u16 data = (inb(_regPorts + 4) << 8);
+        uint16_t data = (inb(_regPorts + 4) << 8);
         data |= inb(_regPorts + 5);
 
         if(data == 0xECEC)
@@ -120,7 +120,7 @@ void IdeDrive::getIdentifyData()
 {
     if(waitStatus()) {
         char tmp[2];
-        u16 word;
+        uint16_t word;
 
         for(int i = 0; i < 256; i++) // Get data
         {
@@ -137,8 +137,8 @@ void IdeDrive::getIdentifyData()
                 }
                 else
                 {
-                    tmp[1] = (uchar) word;
-                    tmp[0] = (uchar) (word >> 8);
+                    tmp[1] = (uint8_t) word;
+                    tmp[0] = (uint8_t) (word >> 8);
                 }
 
                 memcpy(&(_modelName[offset]), tmp, 2);
@@ -184,9 +184,9 @@ bool IdeDrive::waitStatus() const {
 }
 
 void IdeDrive::diskSelect() const {
-    u8 device = (_role == Master) ? 0xA0 : 0xB0;
+    uint8_t device = (_role == Master) ? 0xA0 : 0xB0;
     outb(_regPorts + ATA_DRIVE, device); // Select the device
-    for(u16 i = 2; i <= 5; i++) // Send 0 to port 2-5
+    for(uint16_t i = 2; i <= 5; i++) // Send 0 to port 2-5
         outb(_regPorts + i, 0);
 
     for(auto i = 0; i < 13; ++i) // waits for drive to take the lead
@@ -200,9 +200,9 @@ void IdeDrive::diskSelect(int block, int n) const {
 
     outb(_regPorts + ATA_FEATURES, 0x00); // NULL byte to port 0x1F1
     outb(_regPorts + ATA_SECT_COUNT, n); //Sector count
-    outb(_regPorts + ATA_LBA_LOW, static_cast<uchar>(block)); //Low 8 bits of the block address
-    outb(_regPorts + ATA_LBA_MID, static_cast<uchar>(block >> 8)); //Next 8 bits
-    outb(_regPorts + ATA_LBA_HIGH, static_cast<uchar>(block >> 16)); //Next
+    outb(_regPorts + ATA_LBA_LOW, static_cast<uint8_t>(block)); //Low 8 bits of the block address
+    outb(_regPorts + ATA_LBA_MID, static_cast<uint8_t>(block >> 8)); //Next 8 bits
+    outb(_regPorts + ATA_LBA_HIGH, static_cast<uint8_t>(block >> 16)); //Next
 
     //Drive indicator, magic bits and highest 4 bits of the block address
     outb(_regPorts + ATA_DRIVE, 0xE0 | (_role << 4) | ((block >> 24) & 0x0F));
@@ -215,7 +215,7 @@ char* IdeDrive::read(int numblock, int count)
 
     diskSelect(numblock, count);
 
-    u16 tmp;
+    uint16_t tmp;
     auto buffer = new char[512 * count];
     memset(buffer, 0, 512 * count);
 
@@ -224,8 +224,8 @@ char* IdeDrive::read(int numblock, int count)
     for(int idx = 0; idx < 256 * count; idx++)
     {
         tmp = inw(_regPorts + ATA_DATA);
-        buffer[idx * 2] = (uchar) tmp;
-        buffer[idx * 2 + 1] = (uchar) (tmp >> 8);
+        buffer[idx * 2] = (uint8_t) tmp;
+        buffer[idx * 2 + 1] = (uint8_t) (tmp >> 8);
         while(readStatus()[ATA_Status::BSY]) {};
     }
 
@@ -264,7 +264,7 @@ void IdeDrive::write(int numblock, int count, const char * const data)
 
     diskSelect(numblock, count);
 
-    u16 tmp;
+    uint16_t tmp;
 
     sendCommand(ATA_Command::ATA_WRITE);
 

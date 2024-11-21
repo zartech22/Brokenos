@@ -4,8 +4,8 @@
 
 void  switch_to_task(int n, int mode)
 {
-	u32 kesp, eflags;
-	u16 kss, ss, cs;
+	uint32_t kesp, eflags;
+	uint16_t kss, ss, cs;
 	
 	current = &p_list[n];
 	
@@ -59,7 +59,7 @@ void  switch_to_task(int n, int mode)
 void schedule()
 {
 	process *p;
-	u32 *stack_ptr;
+	uint32_t *stack_ptr;
     int newpid;
 	
 	//Récup ds stack_ptr le poiteur vers registres sauvegardes

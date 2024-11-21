@@ -22,7 +22,7 @@ enum class ATA_Command
     ATA_IDENTIFY_ATAPI	= 0xA1
 };
 
-enum ATA_Registers : u16
+enum ATA_Registers : uint16_t
 {
     ATA_DATA		= 0x00,
 
@@ -43,7 +43,7 @@ enum ATA_Registers : u16
 
 class ATA_Status {
 public:
-    enum StatusField : u8 {
+    enum StatusField : uint8_t {
         ERR = 0x01,
         IDX = 0x02,
         CORR = 0x04,
@@ -55,9 +55,9 @@ public:
     };
 
     ATA_Status() : _status(0) {}
-    explicit ATA_Status(const u8 status) : _status(status) {}
+    explicit ATA_Status(const uint8_t status) : _status(status) {}
 
-    [[nodiscard]] u8 getByte() const {
+    [[nodiscard]] uint8_t getByte() const {
         return _status;
     }
 
@@ -70,21 +70,21 @@ public:
     }
 
 private:
-    u8 _status;
+    uint8_t _status;
 };
 
 struct Partition
 {
-    u8	bootable;
-    u8	s_head;
-    u16	s_sector	: 6;
-    u16	s_cycl		: 10;
-    u8	sys_id;
-    u8	e_head;
-    u16	e_sector	: 6;
-    u16	e_cycl		: 10;
-    u32	s_lba;
-    u32	size;
+    uint8_t	bootable;
+    uint8_t	s_head;
+    uint16_t	s_sector	: 6;
+    uint16_t	s_cycl		: 10;
+    uint8_t	sys_id;
+    uint8_t	e_head;
+    uint16_t	e_sector	: 6;
+    uint16_t	e_cycl		: 10;
+    uint32_t	s_lba;
+    uint32_t	size;
 } __attribute__ ((packed));
 
 #endif // IDETYPES_H

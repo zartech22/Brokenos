@@ -39,7 +39,7 @@ public :
 
     virtual ~Screen() = default;
 
-    virtual void putcar(uchar) = 0;
+    virtual void putcar(uint8_t) = 0;
 
     virtual void clean() {
     }
@@ -60,9 +60,9 @@ public :
 
     void setColor(Color fgColor, Color bgColor);
 
-    void setPos(u8 posX, u8 posY);
+    void setPos(uint8_t posX, uint8_t posY);
 
-    [[nodiscard]] const u8 &getColor() const { return _colors; }
+    [[nodiscard]] const uint8_t &getColor() const { return _colors; }
 
     [[nodiscard]] bool isLoading() const { return _isLoading; }
 
@@ -70,7 +70,7 @@ public :
 
     void failMsg();
 
-    void dump(const uchar *, int);
+    void dump(const uint8_t *, int);
 
     void switchCursor();
 
@@ -93,11 +93,11 @@ private :
 
     static Screen *_inst;
 
-    u8 _colors;
+    uint8_t _colors;
 
     bool _showCursor;
     bool _isLoading;
-    u8 _ticNbr;
+    uint8_t _ticNbr;
 
     void print_core(const char *, va_list);
 
@@ -105,15 +105,15 @@ private :
 
     void printk_core(const char *s, va_list ap);
 
-    void printBlock(const char *msg, u8 posX, u8 colors = 0x0E);
+    void printBlock(const char *msg, uint8_t posX, uint8_t colors = 0x0E);
 
 protected:
     Screen() : _colors(SoftBlue), _showCursor(false), _isLoading(false), _ticNbr(0), _posX(0), _posY(0), _maxX(0),
                _maxY(0) { _inst = this; }
 
-    virtual void scrollup(u8);
+    virtual void scrollup(uint8_t);
 
-    u8 _posX, _posY, _maxX, _maxY;
+    uint8_t _posX, _posY, _maxX, _maxY;
 
-    static void move_cursor(u8, u8);
+    static void move_cursor(uint8_t, uint8_t);
 };

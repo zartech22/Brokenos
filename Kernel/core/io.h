@@ -14,7 +14,7 @@
 
 //lit octet sur un port
 #define inb(port) ({	\
-		unsigned char _v; \
+		uint8_t _v; \
 		asm volatile ("inb %%dx, %%al" : "=a" (_v) : "d" (port)); \
 		_v;		\
 	})
@@ -23,7 +23,7 @@
 		asm volatile("outw %%ax, %%dx" :: "d" (port), "a" (value));
 
 #define inw(port) ({	\
-		u16 _v;			\
+		uint16_t _v;			\
 		asm volatile("inw %%dx, %%ax" : "=a" (_v) : "d" (port));	\
 		_v;				\
 })
@@ -32,7 +32,7 @@
 		asm volatile("outl %%eax, %%dx" :: "d" (port), "a" (value));
 
 #define inl(port) ({	\
-		u32 _v;			\
+		uint32_t _v;			\
 		asm volatile("inl %%dx, %%eax" : "=a" (_v) : "d" (port));	\
 		_v;				\
 })

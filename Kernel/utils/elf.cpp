@@ -1,30 +1,31 @@
+#include <source_location>
 #include <utils/elf.h>
 #include <memory/mm.h>
 #include <utils/lib.h>
 #include <memory/kmalloc.h>
 #include <video/Screen.h>
 
-bool isElf(char *file)
+bool isElf(const char *file)
 {
-    const auto *header = reinterpret_cast<Elf32_header *>(file);
+    const auto *header = reinterpret_cast<const Elf32_header *>(file);
 
     return (header->ident[0] == ELFMAG0 && header->ident[1] == ELFMAG1
             && header->ident[2] == ELFMAG2 && header->ident[3] == ELFMAG3);
 }
 
-u32 loadElf(char *file, page_directory *pd, page_list *mmap)
+uint32_t loadElf(char *file, page_directory *pd, page_list *mmap)
 {
     char *p;
-    u32 v_begin, v_end, v_addr;
+    uint32_t v_begin, v_end, v_addr;
 
     int i;
 
-    auto *header = reinterpret_cast<Elf32_header *>(file);
-    auto *entry = reinterpret_cast<Elf_program_header *>(file + header->ph_off);
+    const auto *header = reinterpret_cast<Elf32_header *>(file);
+    const auto *entry = reinterpret_cast<Elf_program_header *>(file + header->ph_off);
 
     if(!isElf(file))
     {
-        Screen::getScreen().printInfo("%s : file not in ELF format !", __FUNCTION__);
+        Screen::getScreen().printInfo("%s : file not in ELF format !", std::source_location::current().function_name());
         asm("hlt");
         return 0;
     }

@@ -1,70 +1,64 @@
 #pragma once
 
-#include <cstddef>
-
-typedef unsigned char   u8;
-typedef unsigned short  u16;
-typedef unsigned int    u32;
-typedef unsigned long long   u64;
-typedef unsigned char   uchar;
+#include <cstdint>
 
 struct mb_partial_info
 {
-    u32 flags;
+    uint32_t flags;
 
-    u32 low_mem;
-    u32 high_mem;
+    uint32_t low_mem;
+    uint32_t high_mem;
 
-    u32 boot_device;
+    uint32_t boot_device;
 
-    u32 cmdline;
+    uint32_t cmdline;
 
-    u32 mods_count;
-    u32 mods_addr;
+    uint32_t mods_count;
+    uint32_t mods_addr;
 
-    u32 syms[4];
-    u32 mmap_length;
-    u32 mmap_addr;
+    uint32_t syms[4];
+    uint32_t mmap_length;
+    uint32_t mmap_addr;
 
-    u32 drives_length;
-    u32 drives_addr;
+    uint32_t drives_length;
+    uint32_t drives_addr;
 
-    u32 config_table;
+    uint32_t config_table;
 
-    u32 boot_loader_name;
+    uint32_t boot_loader_name;
 
-    u32 apm_table;
+    uint32_t apm_table;
 
-    u32 vbe_control_info;
-    u32 vbe_mode_info;
-    u16 vbe_mode;
-    u16 vbe_interface_seg;
-    u16 vbe_interface_off;
-    u16 vbe_interface_len;
+    uint32_t vbe_control_info;
+    uint32_t vbe_mode_info;
+    uint16_t vbe_mode;
+    uint16_t vbe_interface_seg;
+    uint16_t vbe_interface_off;
+    uint16_t vbe_interface_len;
 
-    u64 framebuffer_addr;
-    u32 framebuffer_pitch;
-    u32 framebuffer_width;
-    u32 framebuffer_height;
-    u8  framebuffer_bpp;
-    u8  framebuffer_type;
+    uint64_t framebuffer_addr;
+    uint32_t framebuffer_pitch;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint8_t  framebuffer_bpp;
+    uint8_t  framebuffer_type;
 
     union
     {
         struct
         {
-            u32 framebuffer_pallette_addr;
-            u16 framebuffer_palette_num_colors;
+            uint32_t framebuffer_pallette_addr;
+            uint16_t framebuffer_palette_num_colors;
         };
 
         struct
         {
-            u8 framebuffer_red_field_position;
-            u8 framebuffer_red_mask_size;
-            u8 framebuffer_green_field_position;
-            u8 framebuffer_green_mask_size;
-            u8 framebuffer_blue_field_position;
-            u8 framebuffer_blue_mask_size;
+            uint8_t framebuffer_red_field_position;
+            uint8_t framebuffer_red_mask_size;
+            uint8_t framebuffer_green_field_position;
+            uint8_t framebuffer_green_mask_size;
+            uint8_t framebuffer_blue_field_position;
+            uint8_t framebuffer_blue_mask_size;
         };
     };
 };
@@ -72,8 +66,8 @@ struct mb_partial_info
 struct VbeModeInfo
 {
     unsigned short  ModeAttributes;
-    unsigned char   WinAAttributes;
-    unsigned char   WinBAttributes;
+    uint8_t   WinAAttributes;
+    uint8_t   WinBAttributes;
     unsigned short  WinGranularity;
     unsigned short  WinSize;
     unsigned short  WinASegment;
@@ -82,36 +76,36 @@ struct VbeModeInfo
     unsigned short  BytesPerScanLine;
     unsigned short  XResolution;
     unsigned short  YResolution;
-    unsigned char   XCharSize;
-    unsigned char   YCharSize;
-    unsigned char   NumberOfPlanes;
-    unsigned char   BitsPerPixel;
-    unsigned char   NumberOfBanks;
-    unsigned char   MemoryModel;
-    unsigned char   BankSize;
-    unsigned char   NumberOfImagePages;
-    unsigned char   Reserved_page;
-    unsigned char   RedMaskSize;
-    unsigned char   RedMaskPos;
-    unsigned char   GreenMaskSize;
-    unsigned char   GreenMaskPos;
-    unsigned char   BlueMaskSize;
-    unsigned char   BlueMaskPos;
-    unsigned char   ReservedMaskSize;
-    unsigned char   ReservedMaskPos;
-    unsigned char   DirectColorModeInfo;
+    uint8_t   XCharSize;
+    uint8_t   YCharSize;
+    uint8_t   NumberOfPlanes;
+    uint8_t   BitsPerPixel;
+    uint8_t   NumberOfBanks;
+    uint8_t   MemoryModel;
+    uint8_t   BankSize;
+    uint8_t   NumberOfImagePages;
+    uint8_t   Reserved_page;
+    uint8_t   RedMaskSize;
+    uint8_t   RedMaskPos;
+    uint8_t   GreenMaskSize;
+    uint8_t   GreenMaskPos;
+    uint8_t   BlueMaskSize;
+    uint8_t   BlueMaskPos;
+    uint8_t   ReservedMaskSize;
+    uint8_t   ReservedMaskPos;
+    uint8_t   DirectColorModeInfo;
     unsigned long   PhysBasePtr;
     unsigned long   OffScreenMemOffset;
     unsigned short  OffScreenMemSize;
-    unsigned char   Reserved[206];
+    uint8_t   Reserved[206];
 } __attribute__((packed));
 
 struct mmapInfo
 {
-    u32 size;
-    u32 addr_low;
-    u32 addr_high;
-    u32 length_low;
-    u32 length_high;
-    u8  type;
+    uint32_t size;
+    uint32_t addr_low;
+    uint32_t addr_high;
+    uint32_t length_low;
+    uint32_t length_high;
+    uint8_t  type;
 } __attribute__((packed)) ;

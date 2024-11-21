@@ -17,7 +17,7 @@ public:
 
     ~IdeDrive() { Screen::getScreen().printError("IDE_DRIVE DELETED !");}
 
-    IdeDrive(u16 regPorts, u16 controlPort, DriveRole pos);
+    IdeDrive(uint16_t regPorts, uint16_t controlPort, DriveRole pos);
     [[nodiscard]] bool isConnected() const { return _isConnected; }
     [[nodiscard]] const char* getModelName() const { return _modelName; }
 
@@ -35,7 +35,7 @@ private:
     bool _isConnected;
 
     char _modelName[41];
-    u16 _regPorts, _controlPort;
+    uint16_t _regPorts, _controlPort;
     DriveRole _role;
 
     void sendCommand(ATA_Command command) const;
