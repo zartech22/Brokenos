@@ -32,14 +32,14 @@ page* get_page_from_heap()
 	
 	if(p_addr < static_cast<char *>(nullptr))
 	{
-        Screen::getScreen().printError("[%()] : no page frame available. STOP", __FUNCTION__);
+        sScreen.printError("[%()] : no page frame available. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
 	//Verifie si il y a une page virtuelle libre
 	if(free_vm->vm_end == free_vm->vm_start)
 	{
-        Screen::getScreen().printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
+        sScreen.printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
@@ -87,7 +87,7 @@ page* get_page_from_heap(char *p_addr, const char *end)
         //Verifie si il y a une page virtuelle libre
         if(free_vm->vm_end == free_vm->vm_start)
         {
-            //Screen::getScreen().printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
+            //sScreen.printError("[%s()] : no more memory in page heap. STOP", __FUNCTION__);
             asm("hlt");
         }
 
@@ -135,7 +135,7 @@ int release_page_from_heap(char *v_addr)
 		release_page_frame(p_addr);
 	else
 	{
-		Screen::getScreen().printInfo("release_page_from_heap : no page frame associated with v_addr");
+		sScreen.printInfo("release_page_from_heap : no page frame associated with v_addr");
 		return 1;
 	}
 	
@@ -182,7 +182,7 @@ int release_page_from_heap(char *v_addr)
 	}
 	else
 	{
-        Screen::getScreen().printError("[%s()] : corrupted linked list. STOP", __FUNCTION__);
+        sScreen.printError("[%s()] : corrupted linked list. STOP", __FUNCTION__);
 		asm("hlt");
 	}
 	
@@ -291,7 +291,7 @@ int pd0_add_page(const char *v_addr, char *p_addr, int flags)
 	
 	if(v_addr > reinterpret_cast<char *>(USER_OFFSET))
 	{
-		Screen::getScreen().printError("pd0_add_page() : vaddr not in kernel space");
+		sScreen.printError("pd0_add_page() : vaddr not in kernel space");
 		return 0;
 	}
 	
@@ -300,7 +300,7 @@ int pd0_add_page(const char *v_addr, char *p_addr, int flags)
 	
 	if((*pde & PG_PRESENT) == 0)
 	{
-		Screen::getScreen().printError("pd0_add_page() : kernel page table not found for vaddr. STOP");
+		sScreen.printError("pd0_add_page() : kernel page table not found for vaddr. STOP");
 		asm("hlt");
 	}
 	

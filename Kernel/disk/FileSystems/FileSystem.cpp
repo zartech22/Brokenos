@@ -1,3 +1,5 @@
 #include <disk/FileSystems/FileSystem.h>
 
-Vector<FileSystem*>* FileSystem::_fsList = nullptr;
+namespace kernel::disk::fileSystems {
+    Vector<FileSystem*>* FileSystem::_fsList = nullptr;
+}

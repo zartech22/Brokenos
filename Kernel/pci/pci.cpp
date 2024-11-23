@@ -18,7 +18,7 @@ uint32_t pciConfigReadDWord(uint8_t bus, uint8_t slot, uint8_t function, uint8_t
 	address = lbus << 16 | lslot << 11 | lfunc << 8
 	          | offset & 0xFC | 0x80000000;
 	
-	outl(0xCF8, address);
+	outl(0xCF8, address)
 	
 	return inl(0xCFC);
 }
@@ -35,7 +35,7 @@ uint16_t pciConfigReadWord(uint8_t bus, uint8_t slot, uint8_t function, uint8_t 
 	address = lbus << 16 | lslot << 11 | lfunc << 8
 	          | offset & 0xFC | 0x80000000;
 	
-	outl(0xCF8, address);
+	outl(0xCF8, address)
 	
 	tmp = static_cast<uint16_t>((inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
 	
@@ -54,7 +54,7 @@ uint8_t pciConfigReadByte(uint8_t bus, uint8_t slot, uint8_t function, uint8_t o
 	address = lbus << 16 | lslot << 11 | lfunc << 8
 	          | offset & 0xFC | 0x80000000;
 	
-	outl(0xCF8, address);
+	outl(0xCF8, address)
 	
 	tmp = static_cast<uint8_t>((inl(0xCFC) >> ((offset & 3) * 8)) & 0xFF);
 	
@@ -71,7 +71,7 @@ void pciConfigWrite(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset,
     address = (uint32_t)((lbus << 16) | (lslot << 11) | (lfunc << 8)
                     | (offset & 0xFC) | ((uint32_t) 0x80000000));
 
-    outl(0xCFC, data);
+    outl(0xCFC, data)
 }
 
 inline uint16_t pciCheckVendor(const uint8_t bus, const uint8_t slot)
@@ -228,9 +228,8 @@ void checkFunction(const uint8_t bus, const uint8_t device, const uint8_t functi
 
 void checkDevice(const uint8_t bus, const uint8_t device)
 {
-	uint16_t vendor = pciConfigReadWord(bus, device, 0, 0);
-	
-	if(vendor == 0xFFFF) return;
+	if(pciConfigReadWord(bus, device, 0, 0) == 0xFFFF) // Check if 'vendor' field is 0xFFFF
+		return;
 	
 	checkFunction(bus, device, 0);
 	

@@ -26,10 +26,9 @@
 
 #include <disk/FileSystems/Ext2/Ext2FS.h>
 
+#include "pic.h"
 #include "video/Fonts/font.h"
 #include "video/Fonts/PSF/PsfFont.h"
-
-void init_pic();
 
 extern "C" void kmain(mb_partial_info *);
 
@@ -42,9 +41,10 @@ namespace kernel {
     int main(mb_partial_info *mbinfo) {
         init_gdt();
         // Update SS and ESP
-        asm("movw $0x18, %%ax	\n \
-         movw %%ax, %%ss		\n \
-         movl %0, %%esp" :: "i"(KERN_STACK));
+        asm(R"(
+        movw $0x18, %%ax
+        movw %%ax, %%ss
+        movl %0, %%esp)" :: "i"(KERN_STACK));
 
         mmapInfo mmap[1024];
         uint32_t size = mbinfo->mmap_length;
@@ -70,7 +70,7 @@ namespace kernel {
         init_idt();
         init_mm(mbinfo->high_mem);
 
-        Screen::initScreen(mbinfo);
+        video::Screen::initScreen(mbinfo);
 
         sScreen.printDebug("MMap info ? %b", mbinfo->flags & (1 << 6));
 
@@ -105,12 +105,13 @@ namespace kernel {
             sScreen.printDebug("Loader : %s", mbinfo->boot_loader_name);
 
         sScreen.printInfo("kernel : configuration du PIC...");
-        init_pic();
+        core::pic::init();
         sScreen.okMsg();
 
         sScreen.printInfo("kernel : init tss");
-        asm("	movw $0x38, %ax \n \
-            ltr %ax");
+        asm(R"(
+            movw $0x38, %ax
+            ltr %ax)");
         sScreen.okMsg();
 
         sScreen.printInfo("kernel : reactivation des interruptions...");
@@ -143,7 +144,7 @@ namespace kernel {
         pciGetVendors();
 
         Vector<IdeCtrl *> &ideControllerList = IdeCtrl::getControllerList();
-        const uint8_t controllerCount = ideControllerList.size();
+        const auto controllerCount = ideControllerList.size();
 
         sScreen.println("Nombre de controlleur IDE : %d", controllerCount);
 
@@ -167,13 +168,11 @@ namespace kernel {
 
         //s.printError("File content : %c %c %c %c", content[0], content[1], content[2], content[3]);
 
-        //Screen::getScreen().printInfo("isElf : %s", isElf(content) ? "True" : "False");
+        //sScreen.printInfo("isElf : %s", isElf(content) ? "True" : "False");
 
 
         //s.printDebug("Taille fichier : %s, %u", test->name, test->size);
 
-        //    FileSystem *fs = FileSystem::getFsList().at(0);
-        sScreen.printDebug("Nb FS : %b", (&(FileSystem::getFsList()) == nullptr));
 
         //    s.printError("\tStart LBA : %u", fs->getPartition().s_lba);
         //    auto f = fs->getFile("foo.txt");
@@ -192,8 +191,8 @@ namespace kernel {
         //    s.print("\n");
 
         load_task("/boot/task1");
-        /*load_task("/boot/task2");
-        load_task("/boot/task3");*/
+        load_task("/boot/task2");
+        load_task("/boot/task3");
 
         sti;
 

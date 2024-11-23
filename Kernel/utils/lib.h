@@ -1,11 +1,13 @@
 #pragma once
+#include <cstdint>
+#include <cstddef>
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
 void* memcpy(char *, const char *, unsigned int);
-void* memset(char*, int, unsigned int);
+void* memset(void*, uint8_t, size_t);
 int strlen(const char*);
 int strcmp(const char*, const char*);
 void itoa(char*, unsigned long int, unsigned int);

@@ -1,3 +1,5 @@
+#include <source_location>
+#include <core/io.h>
 #include <utils/types.h>
 #include <utils/lib.h>
 #include <video/Screen.h>
@@ -16,410 +18,372 @@
 
 #define GRAPHIC_MODE_ATTR   0x10
 
-Screen* Screen::_inst = nullptr;
+namespace kernel::video {
+    Screen *Screen::_inst = nullptr;
 
-Screen& Screen::getScreen()
-{	
-    return *_inst;
-}
-
-void Screen::initScreen(const mb_partial_info *info)
-{
-    if(info->flags & VBE_INFO)
-    {
-        auto *vbeInfo = reinterpret_cast<struct VbeModeInfo *>(info->vbe_mode_info);
-
-        if(vbeInfo->ModeAttributes & GRAPHIC_MODE_ATTR)
-        {
-	        const char *end = reinterpret_cast<char *>(vbeInfo->PhysBasePtr) + vbeInfo->YResolution * vbeInfo->BytesPerScanLine;
-
-            const page *framebuffer = get_page_from_heap(reinterpret_cast<char *>(vbeInfo->PhysBasePtr), end);
-
-            _inst = new GraphicDisplayMode(vbeInfo, framebuffer->v_addr);
-
-            _inst->clean();
-            _inst->printError("[%s] Framebuffer : %p | %d", __FUNCTION__, framebuffer->v_addr,
-                              reinterpret_cast<GraphicDisplayMode *>(_inst)->_font->getGlyph('c').height);
-            delete framebuffer;
-        }
-        else
-            _inst = new TextDisplayMode(vbeInfo);
+    Screen &sScreen {
+        return *_inst;
     }
-    else if(info->flags & FRAMEBUFFER_INFO)
-    {
-        if(!(info->framebuffer_addr >> 32))
-        {
-	        const auto begin = reinterpret_cast<char *>(info->framebuffer_addr & 0xFFFFFFFF);
-	        const auto end = begin + info->framebuffer_height * info->framebuffer_pitch;
 
-	        const page *framebuffer = get_page_from_heap(begin, end);
+    void Screen::initScreen(const mb_partial_info *info) {
+        if (info->flags & VBE_INFO) {
+            auto *vbeInfo = reinterpret_cast<struct VbeModeInfo *>(info->vbe_mode_info);
 
-            _inst = new GraphicDisplayMode(framebuffer->v_addr, info->framebuffer_width, info->framebuffer_height, info->framebuffer_bpp, info->framebuffer_pitch);
+            if (vbeInfo->ModeAttributes & GRAPHIC_MODE_ATTR) {
+                const char *end = reinterpret_cast<char *>(vbeInfo->PhysBasePtr) + vbeInfo->YResolution * vbeInfo->BytesPerScanLine;
 
-            _inst->clean();
-            _inst->printError("Framebuffer !");
+                const page *framebuffer = get_page_from_heap(reinterpret_cast<char *>(vbeInfo->PhysBasePtr), end);
 
-            delete framebuffer;
+                _inst = new GraphicDisplayMode(vbeInfo, framebuffer->v_addr);
+
+                _inst->clean();
+                _inst->printError("[%s] Framebuffer : %p | %d", std::source_location().function_name(), framebuffer->v_addr,
+                                  reinterpret_cast<GraphicDisplayMode *>(_inst)->_font->getGlyph('c').height);
+                delete framebuffer;
+            } else
+                _inst = new TextDisplayMode(vbeInfo);
+        } else if (info->flags & FRAMEBUFFER_INFO) {
+            if (!(info->framebuffer_addr >> 32)) {
+                const auto begin = reinterpret_cast<char *>(info->framebuffer_addr & 0xFFFFFFFF);
+                const auto end = begin + info->framebuffer_height * info->framebuffer_pitch;
+
+                const page *framebuffer = get_page_from_heap(begin, end);
+
+                _inst = new GraphicDisplayMode(framebuffer->v_addr, info->framebuffer_width, info->framebuffer_height,
+                                               info->framebuffer_bpp, info->framebuffer_pitch);
+
+                _inst->clean();
+                _inst->printError("Framebuffer !");
+
+                delete framebuffer;
+            }
         }
     }
-}
 
-void Screen::print(const char *string, ...)
-{
-	va_list ap;
-	va_start(ap, string);
-	
-	print_core(string, ap);
-	
-	va_end(ap);
-}
+    void Screen::print(const char *string, ...) {
+        va_list ap;
+        va_start(ap, string);
 
-void Screen::println(const char *string, ...)
-{
-	va_list ap;
-	va_start(ap, string);
-	
-	print_core(string, ap);
-    putcar('\n');
-    putcar('\n');
-	
-	va_end(ap);
-}
+        print_core(string, ap);
 
-void Screen::printInfo(const char *str, ...)
-{	
-	va_list ap;
-	va_start(ap, str);
-	
-	printBlock("INFO", 0);
-	putcar(' ');
-	println_core(str, ap);
-		
-	va_end(ap);
-}
+        va_end(ap);
+    }
 
-void Screen::printDebug(const char *str, ...)
-{	
-	va_list ap;
-	va_start(ap, str);
+    void Screen::println(const char *string, ...) {
+        va_list ap;
+        va_start(ap, string);
 
-	printBlock("DEBUG", 0, (Color::Yellow << 4) | Color::Black);
-	putcar(' ');
-	println_core(str, ap);
-	
-	va_end(ap);
-}
+        print_core(string, ap);
+        putcar('\n');
+        putcar('\n');
 
-void Screen::printError(const char *str, ...)
-{	
-	va_list ap;
-	va_start(ap, str);
-	
-	printBlock("ERROR", 0, (Color::Red << 4) | Color::White);
-	putcar(' ');
-	println_core(str, ap);
-		
-	va_end(ap);
-}
+        va_end(ap);
+    }
 
-void Screen::printk(const char *s, ...)
-{
-	va_list ap;
+    void Screen::printInfo(const char *str, ...) {
+        va_list ap;
+        va_start(ap, str);
 
-	va_start(ap, s);
-	
-	printk_core(s, ap);
-	
-	va_end(ap);
-}
+        printBlock("INFO", 0);
+        putcar(' ');
+        println_core(str, ap);
 
-void Screen::printk(const String *s, ...)
-{
-	va_list ap;
+        va_end(ap);
+    }
 
-	va_start(ap, s);
+    void Screen::printDebug(const char *str, ...) {
+        va_list ap;
+        va_start(ap, str);
 
-	printk_core(s->c_str(), ap);
+        printBlock("DEBUG", 0, (Color::Yellow << 4) | Color::Black);
+        putcar(' ');
+        println_core(str, ap);
 
-	va_end(ap);
-}
+        va_end(ap);
+    }
+
+    void Screen::printError(const char *str, ...) {
+        va_list ap;
+        va_start(ap, str);
+
+        printBlock("ERROR", 0, (Color::Red << 4) | Color::White);
+        putcar(' ');
+        println_core(str, ap);
+
+        va_end(ap);
+    }
+
+    void Screen::printk(const char *s, ...) {
+        va_list ap;
+
+        va_start(ap, s);
+
+        printk_core(s, ap);
+
+        va_end(ap);
+    }
+
+    void Screen::printk(const String *s, ...) {
+        va_list ap;
+
+        va_start(ap, s);
+
+        printk_core(s->c_str(), ap);
+
+        va_end(ap);
+    }
 
 
-void Screen::setColor(enum Color fgColor, enum Color bgColor)
-{
-	_colors = (bgColor << 4) | fgColor;
-}
+    void Screen::setColor(enum Color fgColor, enum Color bgColor) {
+        _colors = (bgColor << 4) | fgColor;
+    }
 
-void Screen::setPos(uint8_t posX, uint8_t posY)
-{
-	_posX = posX;
-	_posY = posY;
-}
+    void Screen::setPos(uint8_t posX, uint8_t posY) {
+        _posX = posX;
+        _posY = posY;
+    }
 
-void Screen::okMsg()
-{
-	_posY--;
-    printBlock("OK", _maxX - strlen("OK"), static_cast<uint8_t>(Color::Green));
-	_posY++;
-}
+    void Screen::okMsg() {
+        _posY--;
+        printBlock("OK", _maxX - strlen("OK"), Color::Green);
+        _posY++;
+    }
 
-void Screen::failMsg()
-{
-    _posY -= 8;
-    printBlock("FAIL", _maxX - strlen("FAIL"), static_cast<uint8_t>(Color::Red));
-	_posY++;
-}
+    void Screen::failMsg() {
+        _posY -= 8;
+        printBlock("FAIL", _maxX - strlen("FAIL"), Color::Red);
+        _posY++;
+    }
 
-void Screen::dump(const uint8_t* addr, int n)
-{
-	while(n--)
-	{
-		const auto tab = "0123456789ABCDEF";
-		const char c1 = tab[(*addr & 0xF0) >> 4];
-		const char c2 = tab[*addr & 0x0F];
-		addr++;
-		putcar(c1);
-		putcar(c2);
-	}
+    void Screen::dump(const uint8_t *addr, int n) {
+        while (n--) {
+            const auto tab = "0123456789ABCDEF";
+            const char c1 = tab[(*addr & 0xF0) >> 4];
+            const char c2 = tab[*addr & 0x0F];
+            addr++;
+            putcar(c1);
+            putcar(c2);
+        }
 
-    println("");
-}
+        println("");
+    }
 
-void Screen::switchCursor()
-{
-	_showCursor = !_showCursor;
-}
+    void Screen::switchCursor() {
+        _showCursor = !_showCursor;
+    }
 
-void Screen::show_cursor()
-{
-	move_cursor(_posX, _posY);
-}
+    void Screen::show_cursor() {
+        move_cursor(_posX, _posY);
+    }
 
-void Screen::hide_cursor()
-{
-	move_cursor(-1, -1);
-}
+    void Screen::hide_cursor() {
+        move_cursor(-1, -1);
+    }
 
-void Screen::scrollup(uint8_t n)
-{
-	for(auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM); video += 2)
-	{
-		auto *tmp = video + n * 160;
-		
-		if(tmp < reinterpret_cast<uint8_t *>(SCREENLIM))
-		{
-			*video = *tmp;
-			*(video + 1) = *(tmp + 1);
-		}
-		else
-		{
-			*video = 0;
-			*(video + 1) = 0x07;
-		}
-	}
-	
-	_posY -= n;
-	if(_posY < 0)
-		_posY = 0;
-}
+    void Screen::scrollup(uint8_t n) {
+        for (auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM);
+             video += 2) {
+            auto *tmp = video + n * 160;
 
-void Screen::showLoadScreen()
-{	
-	for(auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM); video += 2)
-	{
-		*video = ' ';
-		*(video + 1) = 0x55;
-	}
-	
-	auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 13));
+            if (tmp < reinterpret_cast<uint8_t *>(SCREENLIM)) {
+                *video = *tmp;
+                *(video + 1) = *(tmp + 1);
+            } else {
+                *video = 0;
+                *(video + 1) = 0x07;
+            }
+        }
 
-	constexpr char color = 0x57;
-	
-	*video = 'K';
-	*(video + 1) = color;
-	
-	*(video + 2) = 'e';
-	*(video + 3) = color;
-	
-	*(video + 4) = 'r';
-	*(video + 5) = color;
-	
-	*(video + 6) = 'n';
-	*(video + 7) = color;
-	
-	*(video + 8) = 'e';
-	*(video + 9) = color;
-	
-	*(video + 10) = 'l';
-	*(video + 11) = color;
-	
-	_isLoading = true;
-}
+        _posY -= n;
+        if (_posY < 0)
+            _posY = 0;
+    }
 
-void Screen::showTic()
-{
-	auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 14));
-	video += _ticNbr * 2;
-	
-	*video = '.';
-	*(video + 1) = 0x57;
-	
-	_ticNbr++;
-			
-	if(_ticNbr > 6)
-	{
-		_ticNbr = 0;
-		_isLoading = false;
-		_posX = 0;
-		scrollup(25);
-	}
-}
+    void Screen::showLoadScreen() {
+        for (auto *video = reinterpret_cast<uint8_t *>(RAMSCREEN); video < reinterpret_cast<uint8_t *>(SCREENLIM);
+             video += 2) {
+            *video = ' ';
+            *(video + 1) = 0x55;
+        }
 
-void Screen::print_core(const char *string, va_list ap)
-{
-	printk_core(string, ap);
-}
+        auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 13));
 
-void Screen::println_core(const char *string, va_list ap)
-{
-	printk_core(string, ap);
-	putcar('\n');
-}
+        constexpr char color = 0x57;
 
-void Screen::printk_core(const char *s, va_list ap)
-{
-	char buf[16];
-	int i, j, buflen;
+        *video = 'K';
+        *(video + 1) = color;
 
-	uint8_t c;
-	unsigned int uival;
-	
-	while ((c = *s++)) {
-		if (c == 0)
-			break;
+        *(video + 2) = 'e';
+        *(video + 3) = color;
 
-		if (c == '%') {
-			int size = 0;
-			c = *s++;
-			if (c >= '0' && c <= '9') {
-				size = c - '0';
-				c = *s++;
-			}
+        *(video + 4) = 'r';
+        *(video + 5) = color;
 
-			if (c == 'd') {
-				int neg = 0;
-				int ival = va_arg(ap, int);
-				if (ival < 0) {
-					uival = 0 - ival;
-					neg++;
-				} else
-					uival = ival;
-				itoa(buf, uival, 10);
+        *(video + 6) = 'n';
+        *(video + 7) = color;
 
-				buflen = strlen(buf);
-				if (buflen < size)
-					for (i = size, j = buflen; i >= 0;
-					     i--, j--)
-						buf[i] =
-						(j >=
-						 0) ? buf[j] : '0';
+        *(video + 8) = 'e';
+        *(video + 9) = color;
 
-				if (neg)
-					printk("-%s", buf);
-				else
-					printk(buf);
-			} else if (c == 'u') {
-				uival = va_arg(ap, int);
-				itoa(buf, uival, 10);
+        *(video + 10) = 'l';
+        *(video + 11) = color;
 
-				buflen = strlen(buf);
-				if (buflen < size)
-					for (i = size, j = buflen; i >= 0;
-					     i--, j--)
-						buf[i] =
-						(j >=
-						 0) ? buf[j] : '0';
+        _isLoading = true;
+    }
 
-				printk(buf);
-			} else if (c == 'x' || c == 'X') {
-				uival = va_arg(ap, int);
-				itoa(buf, uival, 16);
+    void Screen::showTic() {
+        auto *video = reinterpret_cast<uint8_t *>((RAMSCREEN + 70 + 160 * 14));
+        video += _ticNbr * 2;
 
-				buflen = strlen(buf);
-				if (buflen < size)
-					for (i = size, j = buflen; i >= 0;
-					     i--, j--)
-						buf[i] =
-						(j >=
-						 0) ? buf[j] : '0';
+        *video = '.';
+        *(video + 1) = 0x57;
 
-				printk("0x%s", buf);
-			} else if(c == 'b') {
-				uival = va_arg(ap, int);
-				itoa(buf, uival, 2);
+        _ticNbr++;
 
-				buflen = strlen(buf);
-				if(buflen < size)
-					for(i = size, j = buflen; i >= 0; i--, j--)
-						buf[i] = (j >= 0) ? buf[j] : '0';
+        if (_ticNbr > 6) {
+            _ticNbr = 0;
+            _isLoading = false;
+            _posX = 0;
+            scrollup(25);
+        }
+    }
 
-				printk("b%s", buf);
-			} else if (c == 'p') {
-				uival = va_arg(ap, int);
-				itoa(buf, uival, 16);
-				size = 8;
+    void Screen::print_core(const char *string, va_list ap) {
+        printk_core(string, ap);
+    }
 
-				buflen = strlen(buf);
-				if (buflen < size)
-					for (i = size, j = buflen; i >= 0;
-					     i--, j--)
-						buf[i] =
-						(j >=
-						 0) ? buf[j] : '0';
+    void Screen::println_core(const char *string, va_list ap) {
+        printk_core(string, ap);
+        putcar('\n');
+    }
 
-				printk("0x%s", buf);
-			} else if (c == 's') {
-				printk(va_arg(ap, char*));
-			} else if (c == 'S') {
-				printk(va_arg(ap, String*));
-			} else if(c == 'c') {
-				uival = va_arg(ap, int);
-				putcar(static_cast<uint8_t>(uival));
-			}
-		} else
-			putcar(c);
-	}
-}
+    void Screen::printk_core(const char *s, va_list ap) {
+        char buf[16];
+        int i;
+        int j;
+        int buflen;
 
-void Screen::printBlock(const char *msg, uint8_t posX, uint8_t colors)
-{
-	if(posX != 0)
-        posX -=  2;
+        uint8_t c;
+        unsigned int uival;
 
-	const uint8_t tmp = _posX;
-	uint8_t tmpc = _colors;
-	
-	_posX = posX;
-	_colors = colors;
-	
-	print("[%s]", msg);
-		
-	
-	_posX = tmp;
-	_colors = tmpc;
-	
-	if(posX == 0)
-        _posX += strlen(msg) + 2;
-}
+        while ((c = *s++)) {
+            if (c == 0)
+                break;
 
-void Screen::move_cursor(uint8_t x, uint8_t y)
-{
-	uint16_t c_pos;
-	
-	c_pos = y * 80 + x;
-	
-	outb(0x3d4, 0x0f);
-	outb(0x3d5, static_cast<uint8_t>(c_pos));
-	outb(0x3d4, 0x0e);
-	outb(0x3d5, static_cast<uint8_t>(c_pos >> 8));
+            if (c == '%') {
+                uint8_t size = 0;
+                c = *s++;
+                if (c >= '0' && c <= '9') {
+                    size = c - '0';
+                    c = *s++;
+                }
+
+                if (c == 'd') {
+                    bool isNegative = false;
+                    int ival = va_arg(ap, int);
+                    if (ival < 0) {
+                        uival = 0 - ival;
+                        isNegative = true;
+                    } else
+                        uival = ival;
+
+                    itoa(buf, uival, 10);
+
+                    buflen = strlen(buf);
+
+                    if (buflen < size)
+                        for (i = size, j = buflen; i >= 0; i--, j--)
+                            buf[i] = (j >= 0) ? buf[j] : '0';
+
+                    if (isNegative)
+                        printk("-%s", buf);
+                    else
+                        printk(buf);
+                } else if (c == 'u') {
+                    uival = va_arg(ap, int);
+
+                    itoa(buf, uival, 10);
+
+                    buflen = strlen(buf);
+
+                    if (buflen < size)
+                        for (i = size, j = buflen; i >= 0; i--, j--)
+                            buf[i] = (j >= 0) ? buf[j] : '0';
+
+                    printk(buf);
+                } else if (c == 'x' || c == 'X') {
+                    uival = va_arg(ap, int);
+                    itoa(buf, uival, 16);
+
+                    buflen = strlen(buf);
+                    if (buflen < size)
+                        for (i = size, j = buflen; i >= 0; i--, j--)
+                            buf[i] = (j >= 0) ? buf[j] : '0';
+
+                    printk("0x%s", buf);
+                } else if (c == 'b') {
+                    uival = va_arg(ap, int);
+                    itoa(buf, uival, 2);
+
+                    buflen = strlen(buf);
+                    if (buflen < size)
+                        for (i = size, j = buflen; i >= 0; i--, j--)
+                            buf[i] = (j >= 0) ? buf[j] : '0';
+
+                    printk("b%s", buf);
+                } else if (c == 'p') {
+                    uival = va_arg(ap, int);
+                    itoa(buf, uival, 16);
+                    size = 8;
+
+                    buflen = strlen(buf);
+
+                    if (buflen < size)
+                        for (i = size, j = buflen; i >= 0; i--, j--)
+                            buf[i] = (j >= 0) ? buf[j] : '0';
+
+                    printk("0x%s", buf);
+                } else if (c == 's') {
+                    printk(va_arg(ap, char*));
+                } else if (c == 'S') {
+                    printk(va_arg(ap, String*));
+                } else if (c == 'c') {
+                    uival = va_arg(ap, int);
+                    putcar(static_cast<uint8_t>(uival));
+                }
+            } else
+                putcar(c);
+        }
+    }
+
+    void Screen::printBlock(const char *msg, uint8_t posX, uint8_t colors) {
+        if (posX != 0)
+            posX -= 2;
+
+        const uint8_t tmp = _posX;
+        uint8_t tmpc = _colors;
+
+        _posX = posX;
+        _colors = colors;
+
+        print("[%s]", msg);
+
+
+        _posX = tmp;
+        _colors = tmpc;
+
+        if (posX == 0)
+            _posX += strlen(msg) + 2;
+    }
+
+    void Screen::move_cursor(uint8_t x, uint8_t y) {
+        uint16_t c_pos;
+
+        c_pos = y * 80 + x;
+
+        outb(0x3d4, 0x0f)
+        outb(0x3d5, static_cast<uint8_t>(c_pos))
+        outb(0x3d4, 0x0e)
+        outb(0x3d5, static_cast<uint8_t>(c_pos >> 8))
+    }
 }

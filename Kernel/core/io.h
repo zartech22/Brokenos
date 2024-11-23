@@ -1,3 +1,5 @@
+#pragma once
+
 //desactive interruptions
 #define cli asm("cli"::)
 

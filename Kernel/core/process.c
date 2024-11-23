@@ -2,105 +2,95 @@
 #include <utils/lib.h>
 #include <memory/mm.h>
 #include <core/io.h>
-#include <memory/kmalloc.h>
-#include <utils/types.h>
 #include <disk/FileSystems/FileSystem.h>
 #include <utils/elf.h>
 
 #define __PLIST__
 #include "process.h"
 
-int load_task(char *fn, uint32_t code_size)
-{
-	page_directory *pd;
-	page_list *pglist;
-	page *kstack;
-	
-	char *v_addr;
-	char *p_addr;
-	char *ustack;
-	
-	int pid;
-	
-	//Calcul du PID du new process. On assume jamais arrive au max
-	//FIXME: reutiliser slots libres
-	pid = 1;
-	while(p_list[pid].state != 0 && pid++ < MAXPID);
-	
-	if(p_list[pid].state != 0)
-	{
-		Screen::getScreen().printError("not enough slot for processes");
-		return 0;
-	}
-	
-	//Creer un rep de pages
-	pd = pd_create();
-	
-	//On change d'espace d'adressage pour passer sur le nouveau rep
-	// de pages. Permet de mettre a jour facilement en utilisant la fct
-	// pd_add_page()
-	asm("mov %0, %%eax; mov %%eax, %%cr3" :: "m"(pd->base->p_addr));
-	
-	//Alloc de pages pour y copier la tache
-	pglist = static_cast<page_list *>(kmalloc(sizeof(page_list)));
-	pglist->page = nullptr;
-	pglist->next = nullptr;
-	pglist->prev = nullptr;
-	
-	int i = 0;
-	
-	while(i < code_size)
-	{
-		//Creation de l'espace d'adressage a partir de l'adresse 0x40000
-		p_addr = get_page_frame();
-		v_addr = reinterpret_cast<char *>(USER_OFFSET + i);
-		pd_add_page(v_addr, p_addr, PG_USER, pd);
-		
-		//Maj de la liste de page utilisee
-		pglist->page = static_cast<page *>(kmalloc(sizeof(page)));
-		pglist->page->p_addr = p_addr;
-		pglist->page->v_addr = v_addr;
-		
-		pglist->next = static_cast<page_list *>(kmalloc(sizeof(page_list)));
-		pglist->next->page = nullptr;
-		pglist->next->next = nullptr;
-		pglist->next->prev = pglist;
-		
-		pglist = pglist->next;
-		
-		i += PAGESIZE;
-	};
-	
-	//Copie du code
-	memcpy(reinterpret_cast<char *>(USER_OFFSET), fn, code_size);
-	
-	//Cree la pile user
-	ustack = get_page_frame();
-	pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
-	
-	//Cree la pile noyau
-	kstack = get_page_from_heap();
-	
-	n_proc++;
-	
-	p_list[pid].pid = pid;
+int load_task(const char *fn, uint32_t code_size) {
+    char *v_addr;
+    char *p_addr;
+    char *ustack;
 
-	/* Initialisation des registres */
-	p_list[n_proc].regs.ss = 0x33;
-	p_list[n_proc].regs.esp = USER_STACK + PAGESIZE - 16;
-	p_list[n_proc].regs.eflags = 0x0;
-	p_list[n_proc].regs.cs = 0x23;
-	p_list[n_proc].regs.eip = 0x40000000;
-	p_list[n_proc].regs.ds = 0x2B;
-	p_list[n_proc].regs.es = 0x2B;
-	p_list[n_proc].regs.fs = 0x2B;
-	p_list[n_proc].regs.gs = 0x2B;
-	p_list[n_proc].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
-	
-	p_list[n_proc].kstack.ss0 = 0x18;
-	p_list[n_proc].kstack.esp0 = reinterpret_cast<uint32_t>(kstack->v_addr) + PAGESIZE - 16;
-	
-	p_list[n_proc].regs.eax = 0;
+    uint8_t pid = 1;
+
+    //Calcul du PID du new process. On assume jamais arrive au max
+    //FIXME: reutiliser slots libres
+    while (p_list[pid].state != 0 && pid++ < MAXPID);
+
+    if (p_list[pid].state != 0) {
+        sScreen.printError("not enough slot for processes");
+        return 0;
+    }
+
+    //Creer un rep de pages
+    page_directory *pd = pd_create();
+
+    //On change d'espace d'adressage pour passer sur le nouveau rep
+    // de pages. Permet de mettre a jour facilement en utilisant la fct
+    // pd_add_page()
+    asm("mov %0, %%eax; mov %%eax, %%cr3" :: "m"(pd->base->p_addr));
+
+    //Alloc de pages pour y copier la tache
+    page_list *pglist = new page_list;
+    pglist->page = nullptr;
+    pglist->next = nullptr;
+    pglist->prev = nullptr;
+
+    int i = 0;
+
+    while (i < code_size) {
+        //Creation de l'espace d'adressage a partir de l'adresse 0x40000
+        p_addr = get_page_frame();
+        v_addr = reinterpret_cast<char *>(USER_OFFSET + i);
+        pd_add_page(v_addr, p_addr, PG_USER, pd);
+
+        //Maj de la liste de page utilisee
+        pglist->page = new page;
+        pglist->page->p_addr = p_addr;
+        pglist->page->v_addr = v_addr;
+
+        pglist->next = new page_list;
+        pglist->next->page = nullptr;
+        pglist->next->next = nullptr;
+        pglist->next->prev = pglist;
+
+        pglist = pglist->next;
+
+        i += PAGESIZE;
+    };
+
+    //Copie du code
+    memcpy(reinterpret_cast<char *>(USER_OFFSET), fn, code_size);
+
+    //Cree la pile user
+    ustack = get_page_frame();
+    pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
+
+    //Cree la pile noyau
+    page *kstack = get_page_from_heap();
+
+    n_proc++;
+
+    p_list[pid].pid = pid;
+
+    /* Initialisation des registres */
+    p_list[n_proc].regs.ss = 0x33;
+    p_list[n_proc].regs.esp = USER_STACK + PAGESIZE - 16;
+    p_list[n_proc].regs.eflags = 0x0;
+    p_list[n_proc].regs.cs = 0x23;
+    p_list[n_proc].regs.eip = 0x40000000;
+    p_list[n_proc].regs.ds = 0x2B;
+    p_list[n_proc].regs.es = 0x2B;
+    p_list[n_proc].regs.fs = 0x2B;
+    p_list[n_proc].regs.gs = 0x2B;
+    p_list[n_proc].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
+
+    p_list[n_proc].kstack.ss0 = 0x18;
+    p_list[n_proc].kstack.esp0 = reinterpret_cast<uint32_t>(kstack->v_addr) + PAGESIZE - 16;
+
+    p_list[n_proc].regs.eax = 0;
     p_list[n_proc].regs.ecx = 0;
     p_list[n_proc].regs.edx = 0;
     p_list[n_proc].regs.ebx = 0;
@@ -108,65 +98,52 @@ int load_task(char *fn, uint32_t code_size)
     p_list[n_proc].regs.ebp = 0;
     p_list[n_proc].regs.esi = 0;
     p_list[n_proc].regs.edi = 0;
-    
+
     p_list[pid].pd = pd;
     p_list[pid].pglist = pglist;
-    
+
     p_list[pid].state = 1;
-    
+
     asm("mov %0, %%eax; mov %%eax, %%cr3" :: "m"(current->regs.cr3));
 
-	return pid;
-	
+    return pid;
 }
 
-int load_task(const char *filename)
-{
-    if(!(&FileSystem::getFsList()) || FileSystem::getFsList().empty())
-    {
+int load_task(const char *filename) {
+    using namespace kernel::disk::fileSystems;
+
+    if (!(&FileSystem::getFsList()) || FileSystem::getFsList().empty()) {
         sScreen.printError("Error loading file \"%s\". No filesystem available", filename);
         return 0;
     }
 
-    page_directory *pd;
-    page_list *pglist;
-    page *kstack;
-
-    char *file;
-    char *ustack;
-    uint32_t e_entry;
-
-    int pid;
-
-    pid = 1;
+    uint8_t pid = 1;
 
     while (p_list[pid].state != 0 && pid++ < MAXPID);
 
-    if (p_list[pid].state != 0)
-    {
+    if (p_list[pid].state != 0) {
         sScreen.printk("PANIC: not enough slot for processes\n");
         return 0;
     }
 
     /* Cree un repertoire de pages */
-    pd = pd_create();
+    page_directory *pd = pd_create();
 
     asm("mov %0, %%eax;"
         "mov %%eax, %%cr3" :: "m"(pd->base->p_addr));
 
-    file = FileSystem::getFsList().at(0)->readFile(filename);
-
-    pglist = static_cast<page_list *>(kmalloc(sizeof(page_list)));
+    page_list *pglist = new page_list;
     pglist->page = nullptr;
     pglist->next = nullptr;
     pglist->prev = nullptr;
 
-    e_entry = loadElf(file, pd, pglist);
+    char *file = FileSystem::getFsList().at(0)->readFile(filename);
+
+    uint32_t e_entry = loadElf(file, pd, pglist);
 
     delete file;
 
-    if(e_entry == 0)
-    {
+    if (e_entry == 0) {
         asm("mov %0, %%eax;"
             "mov %%eax, %%cr3" :: "m"(current->regs.cr3));
 
@@ -175,55 +152,54 @@ int load_task(const char *filename)
     }
 
     /* Cree la pile utilisateur */
-        ustack = get_page_frame();
-        pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
+    char *ustack = get_page_frame();
+    pd_add_page(reinterpret_cast<char *>(USER_STACK), ustack, PG_USER, pd);
 
-        /* Cree la pile noyau */
-        kstack = get_page_from_heap();
+    /* Cree la pile noyau */
+    page *kstack = get_page_from_heap();
 
-        n_proc++;
+    n_proc++;
 
-        p_list[pid].pid = pid;
+    p_list[pid].pid = pid;
 
-        /* Initialise les registres */
-        p_list[pid].regs.ss = 0x33;
-        p_list[pid].regs.esp = USER_STACK + PAGESIZE - 16;
-        p_list[pid].regs.eflags = 0x0;
-        p_list[pid].regs.cs = 0x23;
-        p_list[pid].regs.eip = e_entry;
-        p_list[pid].regs.ds = 0x2B;
-        p_list[pid].regs.es = 0x2B;
-        p_list[pid].regs.fs = 0x2B;
-        p_list[pid].regs.gs = 0x2B;
-        p_list[pid].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
+    /* Initialise les registres */
+    p_list[pid].regs.ss = 0x33;
+    p_list[pid].regs.esp = USER_STACK + PAGESIZE - 16;
+    p_list[pid].regs.eflags = 0x0;
+    p_list[pid].regs.cs = 0x23;
+    p_list[pid].regs.eip = e_entry;
+    p_list[pid].regs.ds = 0x2B;
+    p_list[pid].regs.es = 0x2B;
+    p_list[pid].regs.fs = 0x2B;
+    p_list[pid].regs.gs = 0x2B;
+    p_list[pid].regs.cr3 = reinterpret_cast<uint32_t>(pd->base->p_addr);
 
-        p_list[pid].kstack.ss0 = 0x18;
-        p_list[pid].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
+    p_list[pid].kstack.ss0 = 0x18;
+    p_list[pid].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
 
-        p_list[pid].regs.eax = 0;
-        p_list[pid].regs.ecx = 0;
-        p_list[pid].regs.edx = 0;
-        p_list[pid].regs.ebx = 0;
+    p_list[pid].regs.eax = 0;
+    p_list[pid].regs.ecx = 0;
+    p_list[pid].regs.edx = 0;
+    p_list[pid].regs.ebx = 0;
 
-        p_list[pid].regs.ebp = 0;
-        p_list[pid].regs.esi = 0;
-        p_list[pid].regs.edi = 0;
+    p_list[pid].regs.ebp = 0;
+    p_list[pid].regs.esi = 0;
+    p_list[pid].regs.edi = 0;
 
-        p_list[pid].pd = pd;
-        p_list[pid].pglist = pglist;
+    p_list[pid].pd = pd;
+    p_list[pid].pglist = pglist;
 
-        p_list[pid].state = 1;
+    p_list[pid].state = 1;
 
-        asm("mov %0, %%eax;"
-            "mov %%eax, %%cr3":: "m"(current->regs.cr3));
+    asm("mov %0, %%eax;"
+        "mov %%eax, %%cr3":: "m"(current->regs.cr3));
 
-        return pid;
+    return pid;
 }
 
-void test(uint32_t test)
-{
-    //Screen::getScreen().printDebug("Salut !");
-    //Screen::getScreen().printError("Test ! %p", function);
+void test(uint32_t test) {
+    //sScreen.printDebug("Salut !");
+    //sScreen.printError("Test ! %p", function);
     //function();
 
     asm("nop;"
@@ -235,72 +211,71 @@ void test(uint32_t test)
 
     int d = 5;
 
-    Screen::getScreen().printDebug("Test = %x. Youpie !", test);
+    sScreen.printDebug("Test = %x. Youpie !", test);
 
-    for(;;)
+    for (;;)
         asm("hlt");
 }
 
-void createThread(void *fn)
-{
-//    struct page_directory *pd;
-//    struct page_list *pglist;
-//    struct page *kstack;
+void createThread(void *fn) {
+    //    struct page_directory *pd;
+    //    struct page_list *pglist;
+    //    struct page *kstack;
 
-//    char *v_addr;
-//    char *p_addr;
-//    char *ustack;
+    //    char *v_addr;
+    //    char *p_addr;
+    //    char *ustack;
 
-//    int pid;
+    //    int pid;
 
-//    //Calcul du PID du new process. On assume jamais arrive au max
-//    //FIXME: reutiliser slots libres
-//    pid = 1;
-//    while(p_list[pid].state != 0 && pid++ < MAXPID);
+    //    //Calcul du PID du new process. On assume jamais arrive au max
+    //    //FIXME: reutiliser slots libres
+    //    pid = 1;
+    //    while(p_list[pid].state != 0 && pid++ < MAXPID);
 
-//    if(p_list[pid].state != 0)
-//    {
-//        Screen::getScreen().printError("not enough slot for processes");
-//        return;
-//    }
+    //    if(p_list[pid].state != 0)
+    //    {
+    //        sScreen.printError("not enough slot for processes");
+    //        return;
+    //    }
 
-//    //Cree la pile user
+    //    //Cree la pile user
 
-//    //Cree la pile noyau
-//    kstack = get_page_from_heap();
+    //    //Cree la pile noyau
+    //    kstack = get_page_from_heap();
 
-//    n_proc++;
+    //    n_proc++;
 
-//    p_list[pid].pid = pid;
+    //    p_list[pid].pid = pid;
 
-//    /* Initialisation des registres */
-//    p_list[n_proc].regs.ss = 0x18;
-//    p_list[n_proc].regs.esp = (uint32_t)kstack->v_addr + PAGESIZE - 16;
-//    p_list[n_proc].regs.eflags = 0x0;
-//    p_list[n_proc].regs.cs = 0x08;
-//    p_list[n_proc].regs.eip = (uint32_t)&test;
-//    p_list[n_proc].regs.ds = 0x10;
-//    p_list[n_proc].regs.es = 0x10;
-//    p_list[n_proc].regs.fs = 0x10;
-//    p_list[n_proc].regs.gs = 0x10;
-//    p_list[n_proc].regs.cr3 = 0;
+    //    /* Initialisation des registres */
+    //    p_list[n_proc].regs.ss = 0x18;
+    //    p_list[n_proc].regs.esp = (uint32_t)kstack->v_addr + PAGESIZE - 16;
+    //    p_list[n_proc].regs.eflags = 0x0;
+    //    p_list[n_proc].regs.cs = 0x08;
+    //    p_list[n_proc].regs.eip = (uint32_t)&test;
+    //    p_list[n_proc].regs.ds = 0x10;
+    //    p_list[n_proc].regs.es = 0x10;
+    //    p_list[n_proc].regs.fs = 0x10;
+    //    p_list[n_proc].regs.gs = 0x10;
+    //    p_list[n_proc].regs.cr3 = 0;
 
-//    p_list[n_proc].kstack.ss0 = 0x18;
-//    p_list[n_proc].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
+    //    p_list[n_proc].kstack.ss0 = 0x18;
+    //    p_list[n_proc].kstack.esp0 = (uint32_t) kstack->v_addr + PAGESIZE - 16;
 
-//    p_list[n_proc].regs.eax = 0;
-//    p_list[n_proc].regs.ecx = 0;
-//    p_list[n_proc].regs.edx = 0;
-//    p_list[n_proc].regs.ebx = 0;
+    //    p_list[n_proc].regs.eax = 0;
+    //    p_list[n_proc].regs.ecx = 0;
+    //    p_list[n_proc].regs.edx = 0;
+    //    p_list[n_proc].regs.ebx = 0;
 
-//    p_list[n_proc].regs.ebp = 0;
-//    p_list[n_proc].regs.esi = 0;
-//    p_list[n_proc].regs.edi = 0;
+    //    p_list[n_proc].regs.ebp = 0;
+    //    p_list[n_proc].regs.esi = 0;
+    //    p_list[n_proc].regs.edi = 0;
 
-//    p_list[pid].pd = 0;
-//    p_list[pid].pglist = 0;
+    //    p_list[pid].pd = 0;
+    //    p_list[pid].pglist = 0;
 
-//    p_list[pid].state = 1;
+    //    p_list[pid].state = 1;
 
 
     cli;
@@ -334,7 +309,7 @@ void createThread(void *fn)
 
     asm("mov %0, %%eax;" :: "m"(th->regs.esp));
 
-    Screen::getScreen().printError("Test addr de ta CARROTE = %p", createThread);
+    sScreen.printError("Test addr de ta CARROTE = %p", createThread);
 
     /*asm(
     "mov %0, %%ss;"

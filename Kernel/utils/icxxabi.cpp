@@ -12,7 +12,7 @@ void *__dso_handle = nullptr; //Attention! Optimally, you should remove the '= 0
 
 void __cxa_pure_virtual()
 {
-    Screen::getScreen().printError("Error with pure virtual !");
+    sScreen.printError("Error with pure virtual !");
     asm("hlt");
 }
 
@@ -29,8 +29,8 @@ int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
 
 void __stack_chk_fail()
 {
-    Screen::getScreen().clean();
-    Screen::getScreen().printError("Stack check failed !");
+    sScreen.clean();
+    sScreen.printError("Stack check failed !");
 
     asm("hlt");
 }

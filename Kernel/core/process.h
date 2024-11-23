@@ -2,14 +2,16 @@
 
 #include <utils/types.h>
 
-#define KERNELMODE 0
-#define USERMODE 1
+enum class ExecutionMode : uint8_t {
+	KERNEL_MODE = 0,
+	USER_MODE = 1
+};
 
-#define MAXPID	32
+constexpr uint8_t MAXPID = 32;
 
 struct process
 {
-	int pid;
+	uint8_t pid;
 	
 	struct
 	{
@@ -54,16 +56,16 @@ struct thread
 
 #ifdef __PLIST__
 	process p_list[MAXPID + 1];
-	process *current = 0;
-	int n_proc = 0;
+	process *current = nullptr;
+	uint8_t n_proc = 0;
 #else
     extern "C" process p_list[];
     extern "C" process *current;
-    extern "C" int n_proc;
+    extern "C" uint8_t n_proc;
 #endif
 
 
-int load_task(char*, uint32_t);
+int load_task(const char*, uint32_t);
 int load_task(const char *filename);
 
 void createThread(void *fn);

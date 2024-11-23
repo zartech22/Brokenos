@@ -41,7 +41,7 @@ void IdeCtrl::displayModelNames()
 {
     for(int i = 0; i < 4; i++)
         if(_connectedDevice[i])
-            Screen::getScreen().printk("IDE Device : %s\n", _drives[i]->getModelName());
+            sScreen.printk("IDE Device : %s\n", _drives[i]->getModelName());
 }
 
 void IdeCtrl::displayTree()

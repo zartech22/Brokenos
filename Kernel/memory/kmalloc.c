@@ -38,7 +38,7 @@ void* ksbrk(const unsigned int n)
 {
 	if((kern_heap + (n * PAGESIZE)) > reinterpret_cast<char *>(KERN_HEAP_LIM))
 	{
-		Screen::getScreen().printError("ksbrk() : no virtual memomry left for kernel heap !");
+		sScreen.printError("ksbrk() : no virtual memomry left for kernel heap !");
 		return reinterpret_cast<char *>(-1);
 	}
 	
@@ -51,7 +51,7 @@ void* ksbrk(const unsigned int n)
 		
 		if(p_addr < static_cast<char*>(nullptr))
 		{
-			Screen::getScreen().printError("ksbrk : no free page frame available !");
+			sScreen.printError("ksbrk : no free page frame available !");
 			return reinterpret_cast<char *>(-1);
 		}
 		
@@ -82,7 +82,7 @@ void* kmalloc(unsigned long size)
 	{
 		if(chunk->size == 0)
 		{
-			Screen::getScreen().printError("kmalloc : corrupted chunk with null size in heap");
+			sScreen.printError("kmalloc : corrupted chunk with null size in heap");
 			asm("hlt");
 		}
 		
@@ -92,12 +92,12 @@ void* kmalloc(unsigned long size)
 		{
 			if(ksbrk((realsize / PAGESIZE) + 1) < static_cast<char*>(nullptr))
 			{
-				Screen::getScreen().printError("kmalloc() : no more memory for kernel. STOP");
+				sScreen.printError("kmalloc() : no more memory for kernel. STOP");
 				asm("hlt");
 			}
 			else if(chunk > reinterpret_cast<kmalloc_header *>(kern_heap))
 			{
-				Screen::getScreen().printError("kmalloc() : chunk after heap limit");
+				sScreen.printError("kmalloc() : chunk after heap limit");
 				asm("hlt");
 			}
 		}
@@ -160,6 +160,9 @@ void* krealloc(void *ptr, unsigned long size)
 
 void kfree(const void *v_addr)
 {
+	if (v_addr == nullptr)
+		return;
+
 	kmalloc_header *other;
 	
 	//On libere le bloc

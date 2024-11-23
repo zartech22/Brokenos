@@ -25,7 +25,7 @@ uint32_t loadElf(char *file, page_directory *pd, page_list *mmap)
 
     if(!isElf(file))
     {
-        Screen::getScreen().printInfo("%s : file not in ELF format !", std::source_location::current().function_name());
+        sScreen.printInfo("%s : file not in ELF format !", std::source_location::current().function_name());
         asm("hlt");
         return 0;
     }
@@ -41,13 +41,13 @@ uint32_t loadElf(char *file, page_directory *pd, page_list *mmap)
             {
                 if(v_addr < USER_OFFSET)
                 {
-                    Screen::getScreen().printInfo("File can't load exec below %p", USER_STACK);
+                    sScreen.printInfo("File can't load exec below %p", USER_STACK);
                     return 0;
                 }
 
                 if(v_addr > USER_STACK)
                 {
-                    Screen::getScreen().printInfo("File can't load exec above %p", USER_STACK);
+                    sScreen.printInfo("File can't load exec above %p", USER_STACK);
                     return 0;
                 }
 

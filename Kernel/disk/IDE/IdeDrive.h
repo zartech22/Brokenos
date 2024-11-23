@@ -15,7 +15,7 @@ public:
         strcpy(_modelName, "Uninitialized IDE Device");
     }
 
-    ~IdeDrive() { Screen::getScreen().printError("IDE_DRIVE DELETED !");}
+    ~IdeDrive() { sScreen.printError("IDE_DRIVE DELETED !");}
 
     IdeDrive(uint16_t regPorts, uint16_t controlPort, DriveRole pos);
     [[nodiscard]] bool isConnected() const { return _isConnected; }

@@ -46,7 +46,7 @@ void IdeDrive::displayPartitions()
         if(!data)
             return;
 
-        const char* isExt2 = (Ext2FS::isExt2FS(data) && p.size != 0) ? "Ext2 Part" : "Unk Part";
+        const char* isExt2 = (kernel::disk::fileSystems::Ext2FS::isExt2FS(data) && p.size != 0) ? "Ext2 Part" : "Unk Part";
 
         sScreen.printDebug("Partition %d - start : %u, size %u Go, %s, SysId : %x, Bootable : %s", i + 1, p.s_lba, size, isExt2, p.sys_id, (p.bootable == 0x80) ? "True" : "False");
     }

@@ -3,51 +3,24 @@
 #include <video/Screen.h>
 #include <utils/types.h>
 
-class TextDisplayMode final : public Screen
-{
-public:
-    void putcar(const uint8_t c) override
+namespace kernel::video {
+    class TextDisplayMode final : public Screen
     {
-        if(c == 10) //saut de ligne (CR-NL)
+    public:
+        void putcar(uint8_t c) override;
+
+    private:
+        static constexpr auto COLOR_VGA_BASE = 0xB8000;
+
+        friend class Screen;
+        friend int main(mb_partial_info*);
+
+        explicit TextDisplayMode(const VbeModeInfo *info) : _frameBuffer(reinterpret_cast<uint8_t *>(COLOR_VGA_BASE))
         {
-            _posX = 0;
-            _posY++;
+            _maxX = info->XResolution;
+            _maxY = info->YResolution;
         }
-        else if(c == 9) //tab
-            _posX = _posX + 8 - (_posX % 8);
-        else if(c == 13) //CR
-            _posX = 0;
-        else
-        {
-            auto *video = _frameBuffer + 2 * _posX + 160 * _posY;
-            *video = c;
-            *(video + 1) = getColor();
-            _posX++;
 
-            if(_posX > _maxX)
-            {
-                _posX = 0;
-                _posY++;
-            }
-        }
-        if(_posY > _maxY)
-            scrollup(_posY - _maxY);
-
-        /*if(_showCursor)
-            show_cursor();
-        else
-            hide_cursor();*/
-    }
-
-private:
-    friend class Screen;
-    friend int main(struct mb_partial_info*);
-
-    explicit TextDisplayMode(const VbeModeInfo *info) : Screen(), _frameBuffer(reinterpret_cast<uint8_t *>(0xB8000))
-    {
-        _maxX = info->XResolution;
-        _maxY = info->YResolution;
-    }
-
-    uint8_t * const _frameBuffer;
-};
+        uint8_t * const _frameBuffer;
+    };
+}

@@ -22,14 +22,14 @@ void* memcpy(char *dst, const char *src, unsigned int n)
 	return p;
 }
 
-void* memset(char *src, const int val, unsigned int size)
+void* memset(void *src, const uint8_t val, size_t size)
 {
-	char *p = src;
+	auto *p = static_cast<uint8_t*>(src);
 
 	while(size--)
-		*src++ = val;
+		*p++ = val;
 
-	return p;
+	return src;
 }
 
 int strlen(const char *s)

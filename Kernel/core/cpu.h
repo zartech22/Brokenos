@@ -8,8 +8,8 @@ namespace kernel::core::cpu {
         auto vendor = new uint32_t[13];
 
         asm ("xor %%eax, %%eax;"
-                    "cpuid;"
-                    : "=b" (*vendor), "=c" (*(vendor + 2)), "=d" (*(vendor + 1)) :: "%eax");
+             "cpuid;"
+             : "=b" (*vendor), "=c" (*(vendor + 2)), "=d" (*(vendor + 1)) :: "%eax");
 
         vendor[12] = '\0';
 

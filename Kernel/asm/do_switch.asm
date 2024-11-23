@@ -6,24 +6,24 @@ do_switch:
 	mov esi, [esp]
 	pop eax ;depile current
 	
-	push dword [esi + 4]	;eax
-	push dword [esi + 8]	;ecx
-	push dword [esi + 12]	;edx
-	push dword [esi + 16]	;ebx
-	push dword [esi + 24]	;ebp
-	push dword [esi + 28]	;esi
-	push dword [esi + 32]	;edi
-	push dword [esi + 48]	;ds
-	push dword [esi + 50]	;es
-	push dword [esi + 52]	;fs
-	push dword [esi + 54]	;gs
+	push dword [esi + 1]	;eax
+	push dword [esi + 5]	;ecx
+	push dword [esi + 9]	;edx
+	push dword [esi + 13]	;ebx
+	push dword [esi + 21]	;ebp
+	push dword [esi + 25]	;esi
+	push dword [esi + 29]	;edi
+	push dword [esi + 45]	;ds
+	push dword [esi + 47]	;es
+	push dword [esi + 49]	;fs
+	push dword [esi + 51]	;gs
 
 	;enleve le mask du PIC
 	mov al, 0x20
 	out 0x20, al
 	
 	;charge table des pages
-	mov eax, [esi + 56]
+	mov eax, [esi + 53]
 	mov cr3, eax
 	
 	;charge les registres
